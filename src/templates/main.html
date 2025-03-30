@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block links_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<link rel="stylesheet" href="static/style/main.css">
+<link rel="stylesheet" href="static/style/table.css">
+{% endblock links_scripts %}
+
+{% block main %}
+<main class="main">
+    <section class="expenses_chart_items">
+        <div class="expenses_chart container">
+            <h2 class="title primary">Траты за август</h2>
+            <div class="chart_container">
+                <i class="fa-solid fa-caret-left secondary nav_arrow"></i>
+                <div class="pie_chart">
+                    <!-- Тут будет график -->
+                    <canvas id="sum_chart"></canvas>
+                </div>
+                <i class="fa-solid fa-caret-right secondary nav_arrow"></i>
+            </div>
+        </div>
+
+        <div class="expenses_chart container">
+            <h2 class="title primary">Траты за август</h2>
+            <div class="chart_container">
+                <i class="fa-solid fa-caret-left secondary nav_arrow"></i>
+                <div class="pie_chart">
+                    <!-- Тут будет график -->
+                    <canvas id="count_chart"></canvas>
+                </div>
+                <i class="fa-solid fa-caret-right secondary nav_arrow"></i>
+            </div>
+        </div>
+    </section>
+
+    <section class="expenses container" >
+        <div class="table_view">
+            <!-- <div class="search">
+                <i class="fa-solid fa-magnifying-glass secondary"></i>
+                <input type="search" id="expenses_part_search" placeholder="Поиск по таблице">
+            </div> -->
+            <a href="/expenses" class="secondary" title="Перейти на страницу трат"><h2 class="title primary">Таблица трат</h2></a>
+            {% if records %}
+                <div class="table_container">
+                    <table class="expenses_table">
+                        <tr>
+                            <th>Дата</th>
+                            <th>Название</th>
+                            <th>Цена товара</th>
+                            <th>Единица измерения</th>
+                            <th>Количество единицы измерения</th>
+                            <th>Количество товара</th>
+                            <th>Категория</th>
+                            <th>Подкатегории</th>
+                            <th>Действия</th>
+                        </tr>
+                        {% for record in records %}
+                            <tr>
+                                <td>{{ record.record_date}}</td>
+                                <td>{{ record.product_name }}</td>
+                                <td>{{ record.product_price }}</td>
+                                <td>{{ record.unit.unit_name }}</td>
+                                <td>{{ record.unit_quantity }}</td>
+                                <td>{{ record.product_quantity }}</td>
+                                <td>{{ record.category.category_name }}</td>
+                                <td>{{ record.tags }}</td>
+                                <td class="modify">
+                                    <button class="mbtn">
+                                        <span class="fa-solid fa-pen"></span>
+                                    </button>
+                                    <button class="mbtn">
+                                        <span class="fa-solid fa-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="new_row">
+                            <td><input type="date" name="record_date" id=""></td>
+                            <td><input type="text" name="product_name"></td>
+                            <td><input type="number" name="product_price"></td>
+                            <td>
+                                <select name="unit_name" id="" form="record_form">
+                                    <option value="1">л</option>
+                                    <option value="2">кг</option>
+                                    <option value="3">г</option>
+                                    <option value="4">шт</option>
+                                    <option value="5">мл</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="unit_quantity" id=""></td>
+                            <td><input type="number" name="product_quantity" id=""></td>
+                            <td>
+                                <select name="category_name" id="" form="record_form">
+                                    <option value="1">Сладкое</option>
+                                    <option value="2">Базовые товары</option>
+                                    <option value="3">Товары второй важности</option>
+                                    <option value="4">Бытовые продукты</option>
+                                    <option value="5">Разовая покупка</option>
+                                    <option value="6">Аренда квартиры</option>
+                                    <option value="7">Коммунальные услуги</option>
+                                    <option value="8">Сигареты</option>
+                                    <option value="9">Различные услуги</option>
+                                    <option value="10">Еда вне дома</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="subcategory_name" id="" form="record_form">
+                                    <option value="1">Овощи</option>
+                                    <option value="2">М</option>
+                                    <option value="3">A</option>
+                                </select>
+                            </td>
+                            <td>
+                                ✓       ✕
+                            </td>
+                        </tr>
+                        </table>
+                    </div>
+                    <button class="add_row_btn secondary">Добавить запись</button>
+                {% endif %}
+
+        </div>
+    </section>
+    <div id="record_modal" class="modal">
+        <div class="modal_content container">
+            <h2 class="title primary">Добавить запись</h2>
+            <form action="" id="record_form" >
+                <div class="row">
+                    <label for="">Дата</label>
+                    <input type="date" name="record_date" id="">
+                </div>
+
+                <div class="row">
+                    <label for="">Название</label>
+                    <input type="text" name="product_name">
+                </div>
+
+                <div class="row">
+                    <label for="">Цена товара</label>
+                    <input type="number" name="product_price">
+                </div>
+
+                <div class="row">
+                    <label for="unit_name">Единица измерения</label>
+                    <select name="unit_name" id="" form="record_form">
+                        <option value="1">л</option>
+                        <option value="2">кг</option>
+                        <option value="3">г</option>
+                        <option value="4">шт</option>
+                        <option value="5">мл</option>
+                    </select>
+                </div>
+                
+                <div class="row">
+                    <label for="unit_quantity">Количество единици измерения</label>
+                    <input type="number" name="unit_quantity" id="">
+                </div>
+
+                <div class="row">
+                    <label for="product_quantity">Количество товара</label>
+                    <input type="number" name="product_quantity" id="">
+                </div>
+
+                <div class="row">
+                    <label for="category_name">Категория</label>
+                    <select name="category_name" id="" form="record_form">
+                        <option value="1">Сладкое</option>
+                        <option value="2">Базовые товары</option>
+                        <option value="3">Товары второй важности</option>
+                        <option value="4">Бытовые продукты</option>
+                        <option value="5">Разовая покупка</option>
+                        <option value="6">Аренда квартиры</option>
+                        <option value="7">Коммунальные услуги</option>
+                        <option value="8">Сигареты</option>
+                        <option value="9">Различные услуги</option>
+                        <option value="10">Еда вне дома</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label for="subcategory_name">Подкатегории</label>
+                    <select name="subcategory_name" id="" form="record_form">
+                        <option value="1">Овощи</option>
+                        <option value="2">М</option>
+                        <option value="3">A</option>
+                    </select>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</main>
+<script src="/static/script/statistic_charts.js"></script>
+{% endblock main %}
+

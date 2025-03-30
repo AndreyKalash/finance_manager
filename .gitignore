@@ -1,0 +1,9 @@
+transfer_data/
+.idea/
+.pytest_cache/
+tests/
+other/
+
+venv/
+
+.env

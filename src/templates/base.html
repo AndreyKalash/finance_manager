@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/713caba040.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="static/style/base.css">
+    
+    {% block links_scripts %}
+    {% endblock links_scripts %}
+
+    <title>{% block title %} {{ title }} {% endblock title %}</title>
+
+</head>
+<body>
+    <section>
+        <header class="header container">
+            <h1 class="title primary"><a href="/" class="title primary">Finance Manager</a></h1>
+            <div class="profile">
+                <a href="/profile">
+                    <i class="fa-solid fa-user primary"></i>
+                </a>
+            </div>
+        </header>
+    </section>
+    {% block main %} {% endblock main %}
+</body>
+</html>
+

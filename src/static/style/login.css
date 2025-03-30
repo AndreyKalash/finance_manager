@@ -1,0 +1,76 @@
+.login_content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 20px;
+    width: 100%;
+    max-width: 400px; /* Ограничиваем ширину контейнера */
+}
+
+.login_section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px; /* Добавляем отступы для мобильных устройств */
+}
+
+.login_content a {
+    text-decoration: none;
+    color: #03dac6;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.login_content a:hover {
+    text-decoration: underline;
+}
+
+.login_content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #03dac6;
+    border-radius: 5px;
+    background-color: #1e1e1e;
+    color: #d9cfcf;
+    font-family: 'Roboto', monospace;
+    font-size: 14px;
+}
+
+.login_content input:focus {
+    outline: none;
+    border-color: #bb86fc;
+}
+
+.login_content button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background-color: #03dac6;
+    color: #121212;
+    font-family: 'Roboto', monospace;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.login_content button:hover {
+    background-color: #bb86fc;
+    color: #121212;
+}
+
+/* Уменьшаем отступы для мобильных устройств */
+@media (max-width: 480px) {
+    .login_content {
+        margin: 10px;
+    }
+
+    .login_content input,
+    .login_content button {
+        padding: 8px;
+        font-size: 14px;
+    }
+}

@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+
+{% block links_scripts %}
+<link rel="stylesheet" href="static/style/table.css">
+{% endblock links_scripts %}
+
+{% block main %}
+<section class="expenses container">
+    <div class="table_view">
+        <div class="search">
+            <i class="fa-solid fa-magnifying-glass secondary"></i>
+            <input type="search" id="expenses_search" placeholder="Поиск по таблице">
+        </div>
+        <div class="table_container">
+            <table class="expenses_table">
+                <tr>
+                    <th>Дата</th>
+                    <th>Название</th>
+                    <th>Цена товара</th>
+                    <th>Единица измерения</th>
+                    <th>Количество единици измерения</th>
+                    <th>Количество товара</th>
+                    <th>Категория</th>
+                    <th>Подкатегории</th>
+                    <th>Действия</th>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>сливки</td>
+                    <td>155</td>
+                    <td>мл</td>
+                    <td>400</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>лук</td>
+                    <td>36</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>зелень</td>
+                    <td>100</td>
+                    <td>г</td>
+                    <td>100</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>листья</td>
+                    <td>140</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>помидоры</td>
+                    <td>126</td>
+                    <td>г</td>
+                    <td>300</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>сливки</td>
+                    <td>155</td>
+                    <td>мл</td>
+                    <td>400</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>лук</td>
+                    <td>36</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>зелень</td>
+                    <td>100</td>
+                    <td>г</td>
+                    <td>100</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>листья</td>
+                    <td>140</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>помидоры</td>
+                    <td>126</td>
+                    <td>г</td>
+                    <td>300</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>сливки</td>
+                    <td>155</td>
+                    <td>мл</td>
+                    <td>400</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>лук</td>
+                    <td>36</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>зелень</td>
+                    <td>100</td>
+                    <td>г</td>
+                    <td>100</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>листья</td>
+                    <td>140</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>помидоры</td>
+                    <td>126</td>
+                    <td>г</td>
+                    <td>300</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>сливки</td>
+                    <td>155</td>
+                    <td>мл</td>
+                    <td>400</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>лук</td>
+                    <td>36</td>
+                    <td>г</td>
+                    <td>200</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-08-19</td>
+                    <td>зелень</td>
+                    <td>100</td>
+                    <td>г</td>
+                    <td>100</td>
+                    <td>1</td>
+                    <td>Товары первой важности</td>
+                    <td>Овощи</td>
+                    <td class="modify">
+                        <button class="mbtn">
+                            <span class="fa-solid fa-pen"></span>
+                        </button>
+                        <button class="mbtn">
+                            <span class="fa-solid fa-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="new_row">
+                    <td><input type="date" name="record_date" id=""></td>
+                    <td><input type="text" name="product_name"></td>
+                    <td><input type="number" name="product_price"></td>
+                    <td>
+                        <select name="unit_name" id="" form="record_form">
+                            <option value="1">л</option>
+                            <option value="2">кг</option>
+                            <option value="3">г</option>
+                            <option value="4">шт</option>
+                            <option value="5">мл</option>
+                        </select>
+                    </td>
+                    <td><input type="number" name="unit_quantity" id=""></td>
+                    <td><input type="number" name="product_quantity" id=""></td>
+                    <td>
+                        <select name="category_name" id="" form="record_form">
+                            <option value="1">Сладкое</option>
+                            <option value="2">Базовые товары</option>
+                            <option value="3">Товары второй важности</option>
+                            <option value="4">Бытовые продукты</option>
+                            <option value="5">Разовая покупка</option>
+                            <option value="6">Аренда квартиры</option>
+                            <option value="7">Коммунальные услуги</option>
+                            <option value="8">Сигареты</option>
+                            <option value="9">Различные услуги</option>
+                            <option value="10">Еда вне дома</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="subcategory_name" id="" form="record_form">
+                            <option value="1">Овощи</option>
+                            <option value="2">М</option>
+                            <option value="3">A</option>
+                        </select>
+                    </td>
+                    <td>
+                        ✓       ✕
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <button class="add_row_btn secondary">Добавить запись</button>
+    </div>
+</section>
+{% endblock main %}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/713caba040.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../static/style/base.css">
+    <link rel="stylesheet" href="../static/style/login.css">
+    <title>Login</title>
+</head>
+<body>
+    <section class="login_section">
+        <div class="center container">
+            <div class="login_content">
+                <p class="title primary">Вход</p>
+                <form action="/login" method="post">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Пароль" required>
+                    <button type="submit">Войти</button>
+                </form>
+                <a href="#">Забыли пароль?</a>
+                <a href="#">Регистрация</a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

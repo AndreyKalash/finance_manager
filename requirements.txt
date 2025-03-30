@@ -1,0 +1,12 @@
+fastapi[standard]
+fastapi-users[sqlalchemy]
+fastapi-cache2[redis]
+sqlalchemy
+python-dotenv
+alembic
+asyncpg
+celery
+flower
+pytest-asyncio
+starlette
+pydantic
