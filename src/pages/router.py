@@ -29,15 +29,20 @@ async def get_main_page(
 @pages_router.get("/login", response_class=HTMLResponse)
 async def get_expenses(request: Request):
     return templates.TemplateResponse(
-        request=request, name="login.html", context={"title": "Логин"}
+        request=request, name="login.html", context={"title": "Вход"}
     )
+
+@pages_router.get("/register", response_class=HTMLResponse)
+async def serve_register_page(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="login.html", context={'title': 'Регистрация'}
+        )
     
 @pages_router.get("/expenses", response_class=HTMLResponse)
 async def get_expenses(request: Request):
     return templates.TemplateResponse(
         request=request, name="expenses.html", context={"title": "Траты"}
     )
-
 
 @pages_router.get("/profile", response_class=HTMLResponse)
 async def get_profile(request: Request):
