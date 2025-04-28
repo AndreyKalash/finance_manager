@@ -1,82 +1,49 @@
 <template>
-    <section class="auth_section">
-      <div class="container">
-            <div class="auth_content">
-                <p class="title primary">{{ isLoginMode ? 'Вход' : 'Регистрация' }}</p>
-                <form @submit="handleSubmit">
-                <input v-if="!isLoginMode"
-                    v-model="formData.email" 
-                    type="email" 
-                    placeholder="Электронная почта"
-                    required
-                >
-                <input v-if="isLoginMode"
-                    v-model="formData.username" 
-                    type="username" 
-                    placeholder="Логин"
-                    required
-                >
-                <input 
-                    v-model="formData.password" 
-                    type="password" 
-                    placeholder="Пароль"
-                    required
-                >
-                <input v-if="!isLoginMode"
-                    v-model="formData.sumbitPassword" 
-                    type="password" 
-                    placeholder="Повторите пароль"
-                    required
-                >
-                <button type="submit">{{ isLoginMode ? 'Войти' : 'Зарегистрироваться' }}</button>
-                </form>
-                <div class="form_switch">
-                    <p>{{ isLoginMode ? 'Нет аккаунта?' : 'Уже есть аккаунт?' }}</p>
-                    <a @click="toggleMode">
-                    {{ isLoginMode ? 'Зарегистрироваться' : 'Войти' }}
-                    </a>
-                </div>
-            </div>
+  <section class="auth_section">
+    <div class="container">
+      <div class="auth_content">
+        <p class="title primary">{{ isLoginMode ? 'Вход' : 'Регистрация' }}</p>
+        <form @submit.prevent="handleSubmit">
+          <input v-if="!isLoginMode" v-model="formData.email" type="email" placeholder="Электронная почта" required>
+          <input v-model="formData.username" type="text" placeholder="Логин" required>
+          <input v-model="formData.password" type="password" placeholder="Пароль" required>
+          <input v-if="!isLoginMode" v-model="formData.confirmPassword" type="password" placeholder="Повторите пароль"
+            required>
+          <button type="submit">{{ isLoginMode ? 'Войти' : 'Зарегистрироваться' }}</button>
+        </form>
+        <div class="form_switch">
+          <p>{{ isLoginMode ? 'Нет аккаунта?' : 'Уже есть аккаунт?' }}</p>
+          <router-link :to="isLoginMode ? '/register' : '/login'" class="switch-link" active-class="active"
+            exact-active-class="exact-active">
+            {{ isLoginMode ? 'Зарегистрироваться' : 'Войти' }}
+          </router-link>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 </template>
-  
+
 <script setup>
 
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { api } from '@/api/index'
-
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'login',
-    validator: value => ['login', 'register'].includes(value)
-  }
-})
 
 const router = useRouter()
-const currentMode = ref(props.mode)
-const isLoginMode = computed(() => currentMode.value === 'login')
+const route = useRoute()
+const isLoginMode = computed(() => route.path === '/login')
 const errorMessage = ref('')
 const authStore = useAuthStore()
 
 const formData = ref({
   email: '',
+  username: '',
   password: '',
   confirmPassword: ''
 })
 
-const toggleMode = () => {
-  currentMode.value = isLoginMode.value ? 'register' : 'login'
-  formData.value = { email: '', password: '', confirmPassword: '' }
-  errorMessage.value = ''
-}
 
 const handleSubmit = async () => {
-    console.log('1' + String(isLoginMode.value));
-    console.log('2' + currentMode.value);
   if (isLoginMode.value) {
     await handleLogin()
   } else {
@@ -87,11 +54,16 @@ const handleSubmit = async () => {
 const handleLogin = async () => {
   try {
     errorMessage.value = ''
+
     await authStore.login({
       username: formData.value.username,
       password: formData.value.password
-    })
-    router.push('/')
+    });
+
+    await authStore.fetchUser()
+    const redirectPath = authStore.redirectPath || '/';
+    router.push(redirectPath);
+
   } catch (error) {
     errorMessage.value = 'Неверный email или пароль'
     console.error('Login failed:', error)
@@ -100,44 +72,49 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   if (formData.value.password !== formData.value.confirmPassword) {
-    errorMessage.value = 'Пароли не совпадают'
-    return
+    errorMessage.value = 'Пароли не совпадают';
+    return;
   }
   try {
-    errorMessage.value = ''
-    const response = await api.post('/auth/register', {
+    errorMessage.value = '';
+    
+    await authStore.register({
       email: formData.value.email,
-      password: formData.value.password,
-      username: formData.value.username
+      username: formData.value.username,
+      password: formData.value.password
     });
-    console.log(response)
-    await handleLogin();
-  } catch (error) {
-    errorMessage.value = error.response?.data?.detail || 'Ошибка регистрации'
-    console.error('Registration failed:', error)
-  }
-}
 
-  </script>
-  
+    await handleLogin()
+    
+  } catch (error) {
+    errorMessage.value = error.toString();
+    console.error('Registration failed:', error);
+  }
+};
+
+
+
+</script>
+
 <style scoped>
 form {
-    width: 400px;
-    display: flex;
-    flex-direction: column;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
 }
 
 .auth_section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
 .container {
-    width: 100%;
-    max-width: 500px;
-  }
+  width: 100%;
+  max-width: 500px;
+}
+
 .auth_content {
   max-width: 400px;
   margin: 0 auto;
@@ -172,8 +149,8 @@ button {
 }
 
 button:hover {
-    border: 5px;
-    border-color: #bb86fc;
+  border: 5px;
+  border-color: #bb86fc;
 }
 
 .form_switch {
@@ -182,10 +159,29 @@ button:hover {
 }
 
 a {
-    cursor: pointer;
-    text-decoration: underline;
+  cursor: pointer;
+  text-decoration: underline;
 }
+
 a:hover {
-    color: #42b983;
+  color: #42b983;
+}
+
+.switch-link {
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.switch-link:hover {
+  color: #42b983;
+}
+
+.switch-link.active,
+.switch-link.exact-active {
+  color: #42b983;
+  font-weight: 500;
+  text-decoration: none;
 }
 </style>

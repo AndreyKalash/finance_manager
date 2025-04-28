@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { authGuard } from './guards';
 
 const routes = [
   {
@@ -29,7 +29,7 @@ const routes = [
   {
     path: '/register',
     name: 'register',
-    component: () => import ('@/views/RegisterView.vue'),
+    component: () => import ('@/views/LoginView.vue'),
     meta: {requiresGuest: true}
   }
 ]
@@ -39,16 +39,6 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach(async (to, from, next) => {
-    const authStore = useAuthStore()
-
-    if (to.meta.requiresAuth && !authStore.token) {
-      next('/login')
-    } else if (to.meta.requiresGuest && authStore.token) {
-      next('/')
-    } else {
-      next()
-    }
-  })
+router.beforeEach(authGuard);
 
 export default router

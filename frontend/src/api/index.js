@@ -4,9 +4,10 @@ import router from '@/router'
 
 const api = axios.create({
   baseURL: process.env.VITE_API_URL || 'http://localhost:8000',
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  withCredentials: true,
+  // headers: {
+  //   'Content-Type': 'application/json'
+  // }
 })
 
 api.interceptors.request.use(config => {
@@ -18,7 +19,15 @@ api.interceptors.request.use(config => {
 })
 
 api.interceptors.response.use(
-  response => response,
+  response => {
+    const token = response.headers['authorization']
+    if (token) {
+      const authStore = useAuthStore()
+      authStore.token = token.split(' ')[1]; // Remove 'Bearer '
+      localStorage.setItem('token', authStore.token)
+    }
+    return response
+  },
   error => {
     if (error.response && error.response.status === 401) {
       const authStore = useAuthStore()
