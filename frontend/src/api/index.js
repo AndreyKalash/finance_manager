@@ -23,7 +23,7 @@ api.interceptors.response.use(
     const token = response.headers['authorization']
     if (token) {
       const authStore = useAuthStore()
-      authStore.token = token.split(' ')[1]; // Remove 'Bearer '
+      authStore.token = token.split(' ')[1];
       localStorage.setItem('token', authStore.token)
     }
     return response
@@ -34,8 +34,11 @@ api.interceptors.response.use(
       authStore.logout()
       router.push('/login')
     }
+    if (error.message.includes('CORS')) {
+      alert('Ошибка CORS: проверьте настройки сервера');
+    }
     return Promise.reject(error)
   }
-)
+);
 
 export default api

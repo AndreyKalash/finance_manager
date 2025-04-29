@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api from '@/api'
+import { AuthService } from '@/api/users'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -12,28 +12,16 @@ export const useAuthStore = defineStore('auth', {
       formData.append('username', username)
       formData.append('password', password)
       try {
-        const response = await api.post('auth/login', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        })
-        // this.token = response.data.access_token
-        // localStorage.setItem('token', this.token)
+        const response = await AuthService.login(formData)
         await this.fetchUser()
-        // console.log(response.data)
         return response
       } catch (error) {
         throw error.response?.data?.detail || 'Ошибка входа'
       }
     },
-    async register({ email, username, password }) {
+    async register(userData) {
       try {
-        const response = await api.post('/auth/register', {
-          email,
-          username,
-          password
-        });
-        
+        const response = await AuthService.register(userData);
         if (response.data.access_token) {
           this.token = response.data.access_token;
           localStorage.setItem('token', this.token);
@@ -43,12 +31,9 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         throw error.response?.data?.detail || 'Ошибка регистрации';
       }
-    }
-    
-    
-    ,
+    },
     async fetchUser() {
-      const response = await api.get('/users/me')
+      const response = await AuthService.getMe()
       this.user = response.data
     },
     logout() {

@@ -14,23 +14,6 @@ section {
     margin: 20px;
 }
 
-.header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.header .title {
-    flex-grow: 1;
-    text-align: center;
-}
-
-.header .profile {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-}
-
 .container {
     padding: 20px 40px;
     border-radius: 10px;

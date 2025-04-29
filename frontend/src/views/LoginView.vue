@@ -1,5 +1,5 @@
 <template>
-  <AuthForm mode="login" />
+  <AuthForm />
 </template>
 
 <script setup>

@@ -42,7 +42,6 @@ const formData = ref({
   confirmPassword: ''
 })
 
-
 const handleSubmit = async () => {
   if (isLoginMode.value) {
     await handleLogin()
@@ -133,6 +132,7 @@ input {
   border-radius: 4px;
   color: black;
   font-size: 16px;
+  width: 95%;
 }
 
 button {

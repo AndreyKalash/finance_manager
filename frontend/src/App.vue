@@ -1,26 +1,25 @@
 <template>
   <div id="app">
-    <header class="header container">
-      <h1 class="title primary">
-        <router-link to="/" class="title primary">Finance Manager</router-link>
-      </h1>
-      <div class="profile">
-        <router-link to="/profile">
-          <!-- <img src="./assets/profile.png" alt="" srcset="" class="primary"> -->
-        </router-link>
-      </div>
-    </header>
-    
-    <router-view></router-view>
+    <AppHeader />
+    <router-view />
   </div>
 </template>
 
 <script>
+import AppHeader from '@/components/layout/AppHeader.vue';
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    AppHeader
+  }
 }
 </script>
 
-<style>
-/* Стили уже подключены в main.js */
+<style >
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 </style>
