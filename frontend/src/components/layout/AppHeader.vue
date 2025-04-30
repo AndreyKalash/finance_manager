@@ -1,6 +1,9 @@
 <template>
   <header class="header container">
-    <h1 class="title primary">Finance Manager</h1>
+    <h1 class="title primary">
+  <router-link to="/" class="brand-link">Finance Manager</router-link>
+</h1>
+
     <div v-if="authStore.user" class="header-right">
       <div class="logout-dropdown">
         <button class="logout-btn" @click="toggleDropdown">
@@ -9,7 +12,7 @@
           </svg>
         </button>
         <ul v-if="showDropdown" class="dropdown-menu">
-              <li><router-link to="/me">Профиль</router-link></li>
+              <li><router-link to="/profile">Профиль</router-link></li>
               <li @click="handleLogout">Выйти</li>
             </ul>
           </div>
@@ -43,6 +46,24 @@ document.addEventListener('click', (e) => {
 </script>
 
 <style scoped>
+.brand-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.brand-link:visited,
+.brand-link:active,
+.brand-link:focus {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-link:hover {
+  color: #42b983;
+  text-decoration: none;
+}
+
 .header {
   display: flex;
   justify-content: center;

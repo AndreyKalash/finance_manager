@@ -19,7 +19,7 @@ async def get_units(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ) -> list[UnitAddDTO]:
-    query = select(Unit.name).where(Unit.user_id == current_user.id)
+    query = select(Unit.unit_name).where(Unit.user_id == current_user.id)
     result = await session.execute(query)
     units = result.mappings().all()
     return units

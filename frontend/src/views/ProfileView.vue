@@ -1,189 +1,169 @@
 <template>
   <section class="profile">
-    <AppHeader />
     <div class="container">
       <h2>Профиль пользователя</h2>
       <div v-if="user" class="profile-info">
-        <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
+        <div class="profile-card">
+          <div class="avatar">
+            <img :src="user.avatar || '/default-avatar.png'" alt="Аватар">
+          </div>
+          <div class="details">
+            <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Дата регистрации:</strong> {{ formatDate(user.created_at) }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section>
+<section>
     <div class="settings container">
-      <h2 class="title primary">Категории</h2>
-      <div class="categories-section">
-        <div class="category-list">
-          <h3>Основные категории</h3>
-          <ul>
-            <li v-for="category in mainCategories" :key="category.id">
-              {{ category.name }}
-              <button @click="startEditCategory(category)">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button @click="handleDeleteCategory(category.id)">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </li>
-          </ul>
-          <div class="add-category">
-            <input v-model="newCategoryName" placeholder="Новая категория" />
-            <button @click="handleAddCategory">Добавить</button>
-          </div>
-        </div>
+      <div class="crud-flex-row">
+        <ItemList
+          title="Категории"
+          :items="mainCategories"
+          placeholder="Новая категория"
+          :showColor="true"
+          @add="handleAddCategory"
+          @delete="handleDeleteCategory"
+        />
 
-        <div class="subcategory-list">
-          <h3>Подкатегории</h3>
-          <ul>
-            <li v-for="subcategory in subcategories" :key="subcategory.id">
-              {{ subcategory.name }} ({{ getCategoryName(subcategory.category_id) }})
-              <button @click="startEditSubcategory(subcategory)">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button @click="handleDeleteSubcategory(subcategory.id)">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </li>
-          </ul>
-          <div class="add-subcategory">
-            <select v-model="newSubcategoryCategory">
-              <option v-for="cat in mainCategories" :value="cat.id" :key="cat.id">
-                {{ cat.name }}
-              </option>
-            </select>
-            <input v-model="newSubcategoryName" placeholder="Новая подкатегория" />
-            <button @click="handleAddSubcategory">Добавить</button>
-          </div>
-        </div>
+        <ItemList
+          title="Теги"
+          :items="tags"
+          placeholder="Новый тег"
+          :showColor="true"
+          @add="handleAddTag"
+          @delete="handleDeleteTag"
+        />
+
+        <ItemList
+          title="Единицы измерения"
+          :items="units"
+          placeholder="Новая единица"
+          :showDefaultValue="true"
+          @add="handleAddUnit"
+          @delete="handleDeleteUnit"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import AppHeader from '@/components/layout/AppHeader.vue'
-import { getMe } from '@/api/users'
-import {
-  getCategories, createCategory, deleteCategory,
-  getSubcategories, createSubcategory, deleteSubcategory
-} from '@/api/categories'
+import { ref, onMounted, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useCategoriesStore } from '@/stores/categories'
+import { useTagsStore } from '@/stores/tags'
+import { useUnitsStore } from '@/stores/units'
+import ItemList from '@/components/layout/ItemList.vue'
+
+const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
+const tagsStore = useTagsStore()
+const unitsStore = useUnitsStore()
 
 const user = ref(null)
-const mainCategories = ref([])
-const subcategories = ref([])
+const mainCategories = computed(() => categoriesStore.categories)
+const tags = computed(() => tagsStore.tags)
+const units = computed(() => unitsStore.units)
 
-const newCategoryName = ref('')
-const newSubcategoryName = ref('')
-const newSubcategoryCategory = ref(null)
-
-const fetchUser = async () => {
-  const { data } = await getMe()
-  user.value = data
-}
-
-const fetchCategories = async () => {
-  const { data } = await getCategories()
-  mainCategories.value = data
-  if (data.length && !newSubcategoryCategory.value) {
-    newSubcategoryCategory.value = data[0].id
-  }
-}
-
-const fetchSubcategories = async () => {
-  const { data } = await getSubcategories()
-  subcategories.value = data
-}
-
-const handleAddCategory = async () => {
-  if (!newCategoryName.value.trim()) return
-  await createCategory(newCategoryName.value.trim())
-  newCategoryName.value = ''
-  await fetchCategories()
+// Обработчики для категорий
+const handleAddCategory = async ({ name, color_name }) => {
+  await categoriesStore.createCategory({ name, color_name })
 }
 
 const handleDeleteCategory = async (id) => {
   if (!confirm('Удалить категорию?')) return
-  await deleteCategory(id)
-  await fetchCategories()
-  await fetchSubcategories()
+  await categoriesStore.deleteCategory(id)
 }
 
-const handleAddSubcategory = async () => {
-  if (!newSubcategoryName.value.trim() || !newSubcategoryCategory.value) return
-  await createSubcategory(newSubcategoryName.value.trim(), newSubcategoryCategory.value)
-  newSubcategoryName.value = ''
-  await fetchSubcategories()
+// Обработчики для тегов
+const handleAddTag = async ({ name, color_name }) => {
+  await tagsStore.createTag({ name, color_name })
 }
 
-const handleDeleteSubcategory = async (id) => {
-  if (!confirm('Удалить подкатегорию?')) return
-  await deleteSubcategory(id)
-  await fetchSubcategories()
+const handleDeleteTag = async (id) => {
+  if (!confirm('Удалить тег?')) return
+  await tagsStore.deleteTag(id)
 }
 
-const getCategoryName = (categoryId) => {
-  const cat = mainCategories.value.find(c => c.id === categoryId)
-  return cat ? cat.name : ''
+// Обработчики для единиц измерения
+const handleAddUnit = async ({ name, default_value }) => {
+  await unitsStore.createUnit({ 
+    name, 
+    default_value: Number(default_value) || 0 
+  })
 }
 
-// const startEditCategory = (category) => {
-//   // Открыть модалку или инлайн-редактирование
-// }
-// const startEditSubcategory = (subcategory) => {
-//   // Открыть модалку или инлайн-редактирование
-// }
+const handleDeleteUnit = async (id) => {
+  if (!confirm('Удалить единицу измерения?')) return
+  await unitsStore.deleteUnit(id)
+}
 
+// Вспомогательные методы
+const fetchUser = async () => {
+  await authStore.fetchUser()
+  user.value = authStore.user
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString()
+}
+
+// Инициализация данных
 onMounted(async () => {
   await fetchUser()
-  await fetchCategories()
-  await fetchSubcategories()
+  await Promise.all([
+    categoriesStore.fetchCategories(),
+    tagsStore.fetchTags(),
+    unitsStore.fetchUnits()
+  ])
 })
 </script>
 
 <style scoped>
-.categories-section {
+.profile-card {
   display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.avatar img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #bb86fc;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.crud-flex-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
 }
-.category-list, .subcategory-list {
-  flex: 1;
-  background: #2a2a2a;
-  padding: 1rem;
-  border-radius: 8px;
-}
-ul {
-  list-style: none;
-  padding: 0;
-}
-li {
-  padding: 0.5rem;
-  margin: 0.5rem 0;
-  background: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-button {
-  background: none;
-  border: none;
-  color: #bb86fc;
-  cursor: pointer;
-  margin-left: 0.5rem;
-}
-.add-category, .add-subcategory {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-input, select {
-  background: #333;
-  border: 1px solid #444;
-  color: white;
-  padding: 0.5rem;
-  border-radius: 4px;
-  flex-grow: 1;
+
+@media (max-width: 768px) {
+  .crud-flex-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 }
 </style>

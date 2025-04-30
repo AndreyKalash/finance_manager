@@ -4,8 +4,8 @@
       <div class="auth_content">
         <p class="title primary">{{ isLoginMode ? 'Вход' : 'Регистрация' }}</p>
         <form @submit.prevent="handleSubmit">
-          <input v-if="!isLoginMode" v-model="formData.email" type="email" placeholder="Электронная почта" required>
-          <input v-model="formData.username" type="text" placeholder="Логин" required>
+          <input v-model="formData.email" type="email" placeholder="Электронная почта" required>
+          <input v-if="!isLoginMode" v-model="formData.username" type="text" placeholder="Логин" required>
           <input v-model="formData.password" type="password" placeholder="Пароль" required>
           <input v-if="!isLoginMode" v-model="formData.confirmPassword" type="password" placeholder="Повторите пароль"
             required>
@@ -55,7 +55,7 @@ const handleLogin = async () => {
     errorMessage.value = ''
 
     await authStore.login({
-      username: formData.value.username,
+      username: formData.value.email,
       password: formData.value.password
     });
 
@@ -82,7 +82,6 @@ const handleRegister = async () => {
       username: formData.value.username,
       password: formData.value.password
     });
-
     await handleLogin()
     
   } catch (error) {

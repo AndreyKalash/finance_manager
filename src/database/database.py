@@ -18,8 +18,8 @@ async def select_data(
     session: AsyncSession,
     model: type[DeclarativeBase],
     current_user_uuid: UUID,
-    limit: int,
-    skip: int,
+    limit: int = 1000,
+    skip: int = 0,
 ):
     query = (
         select(model)

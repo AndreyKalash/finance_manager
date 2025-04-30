@@ -5,9 +5,6 @@ import router from '@/router'
 const api = axios.create({
   baseURL: process.env.VITE_API_URL || 'http://localhost:8000',
   withCredentials: true,
-  // headers: {
-  //   'Content-Type': 'application/json'
-  // }
 })
 
 api.interceptors.request.use(config => {
@@ -20,25 +17,34 @@ api.interceptors.request.use(config => {
 
 api.interceptors.response.use(
   response => {
-    const token = response.headers['authorization']
-    if (token) {
+    const bodyToken = response.data?.access_token
+    const headerToken = response.headers['authorization']
+    
+    if (bodyToken || headerToken) {
       const authStore = useAuthStore()
-      authStore.token = token.split(' ')[1];
-      localStorage.setItem('token', authStore.token)
+      const token = bodyToken || headerToken.split(' ')[1]
+      
+      authStore.token = token
+      localStorage.setItem('token', token)
     }
+    
     return response
   },
   error => {
-    if (error.response && error.response.status === 401) {
-      const authStore = useAuthStore()
-      authStore.logout()
-      router.push('/login')
+    if (error.response) {
+      if (error.response.status === 401) {
+        const authStore = useAuthStore()
+        authStore.logout()
+        router.push('/login')
+      }
+      
+      if (error.response.data?.detail?.includes('CORS')) {
+        alert('Ошибка CORS: проверьте настройки сервера')
+      }
     }
-    if (error.message.includes('CORS')) {
-      alert('Ошибка CORS: проверьте настройки сервера');
-    }
+    
     return Promise.reject(error)
   }
-);
+)
 
 export default api

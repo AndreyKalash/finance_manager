@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { AuthService } from '@/api/users'
+import { AuthAPI } from '@/api/users'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -8,20 +8,32 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     async login({ username, password }) {
-      const formData = new FormData()
-      formData.append('username', username)
-      formData.append('password', password)
+      const params = new URLSearchParams()
+      params.append('username', username)
+      params.append('password', password)
+      
       try {
-        const response = await AuthService.login(formData)
+        const response = await AuthAPI.login(params)
+        this.token = response.data.access_token
+        localStorage.setItem('token', this.token)
         await this.fetchUser()
         return response
       } catch (error) {
         throw error.response?.data?.detail || 'Ошибка входа'
       }
     },
+    async initAuth() {
+      if (this.token && !this.user) {
+        try {
+          await this.fetchUser()
+        } catch (error) {
+          this.logout()
+        }
+      }
+    },
     async register(userData) {
       try {
-        const response = await AuthService.register(userData);
+        const response = await AuthAPI.register(userData);
         if (response.data.access_token) {
           this.token = response.data.access_token;
           localStorage.setItem('token', this.token);
@@ -33,13 +45,19 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     async fetchUser() {
-      const response = await AuthService.getMe()
+      const response = await AuthAPI.getMe()
       this.user = response.data
     },
     logout() {
       this.user = null
       this.token = null
       localStorage.removeItem('token')
+    },
+    async requestToken(email) {
+      return await AuthAPI.requestVerifyToken(email);
+    },
+    async verifyToken(token) {
+      return await AuthAPI.verifyToken(token)
     }
   }
 })

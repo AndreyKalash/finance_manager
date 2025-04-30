@@ -23,9 +23,9 @@ async def get_tags(
     current_user: User = Depends(current_user),
 ) -> list[TagDTO]:
 
-    fields = [Tag.name, Tag.color]
+    fields = [Tag.tag_name, Tag.tag_color]
     filter_conditions = [Tag.user_id == current_user.id]
-    tags = await select_data(session, fields, filter_conditions)
+    tags = await select_data(session, Tag, current_user.id)
 
     return tags
 
