@@ -3,6 +3,10 @@ transfer_data/
 .pytest_cache/
 tests/
 other/
+.vscode/
+
+__pycache__/
+*.py[cod]
 
 venv/
 
