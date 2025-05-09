@@ -1,23 +1,26 @@
 <template>
-  <header class="header container">
-    <h1 class="title primary">
-  <router-link to="/" class="brand-link">Finance Manager</router-link>
-</h1>
+  <section>
+    <header class="header container">
+      <h1 class="title primary">
+        <router-link to="/" class="brand-link">Finance Manager</router-link>
+      </h1>
 
-    <div v-if="authStore.user" class="header-right">
-      <div class="logout-dropdown">
-        <button class="logout-btn" @click="toggleDropdown">
-          <svg class="profile-icon" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-          </svg>
-        </button>
-        <ul v-if="showDropdown" class="dropdown-menu">
-              <li><router-link to="/profile">Профиль</router-link></li>
-              <li @click="handleLogout">Выйти</li>
-            </ul>
-          </div>
-    </div>
-  </header>
+      <div v-if="authStore.user" class="header-right">
+        <div class="logout-dropdown">
+          <button class="logout-btn" @click="toggleDropdown">
+            <svg class="profile-icon" viewBox="0 0 24 24">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+            </svg>
+          </button>
+          <ul v-if="showDropdown" class="dropdown-menu">
+            <li><router-link to="/profile">Профиль</router-link></li>
+            <li @click="handleLogout">Выйти</li>
+          </ul>
+        </div>
+      </div>
+    </header>
+  </section>
 </template>
 
 <script setup>
@@ -127,7 +130,7 @@ document.addEventListener('click', (e) => {
   border: 1px solid #ddd;
   padding: 10px;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-menu li {
@@ -139,13 +142,15 @@ document.addEventListener('click', (e) => {
   border-bottom: none;
 }
 
-.dropdown-menu li a, .dropdown-menu li {
+.dropdown-menu li a,
+.dropdown-menu li {
   text-decoration: none;
   color: #666;
   transition: color 0.2s;
 }
 
-.dropdown-menu li a:hover, .dropdown-menu li:hover {
+.dropdown-menu li a:hover,
+.dropdown-menu li:hover {
   color: #42b983;
 }
 </style>

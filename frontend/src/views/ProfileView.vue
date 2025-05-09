@@ -17,35 +17,18 @@
     </div>
   </section>
 
-<section>
+  <section>
     <div class="settings container">
+      <h1 class="primary title">Списки</h1>
       <div class="crud-flex-row">
-        <ItemList
-          title="Категории"
-          :items="mainCategories"
-          placeholder="Новая категория"
-          :showColor="true"
-          @add="handleAddCategory"
-          @delete="handleDeleteCategory"
-        />
+        <ItemList title="Категории" :items="mainCategories" placeholder="Новая категория" :showColor="true"
+          @add="handleAddCategory" @edit="handleEditCategory" @delete="handleDeleteCategory" />
 
-        <ItemList
-          title="Теги"
-          :items="tags"
-          placeholder="Новый тег"
-          :showColor="true"
-          @add="handleAddTag"
-          @delete="handleDeleteTag"
-        />
+        <ItemList title="Теги" :items="tags" placeholder="Новый тег" :showColor="true" @add="handleAddTag"
+          @edit="handleEditTag" @delete="handleDeleteTag" />
 
-        <ItemList
-          title="Единицы измерения"
-          :items="units"
-          placeholder="Новая единица"
-          :showDefaultValue="true"
-          @add="handleAddUnit"
-          @delete="handleDeleteUnit"
-        />
+        <ItemList title="Единицы измерения" :items="units" placeholder="Новая единица" :showDefaultValue="true"
+          @add="handleAddUnit" @edit="handleEditUnit" @delete="handleDeleteUnit" />
       </div>
     </div>
   </section>
@@ -69,9 +52,12 @@ const mainCategories = computed(() => categoriesStore.categories)
 const tags = computed(() => tagsStore.tags)
 const units = computed(() => unitsStore.units)
 
-// Обработчики для категорий
-const handleAddCategory = async ({ name, color_name }) => {
-  await categoriesStore.createCategory({ name, color_name })
+const handleAddCategory = async ({ name, color }) => {
+  await categoriesStore.createCategory(name, color);
+}
+
+const handleEditCategory = async (item) => {
+  await categoriesStore.updateCategory(item)
 }
 
 const handleDeleteCategory = async (id) => {
@@ -79,9 +65,12 @@ const handleDeleteCategory = async (id) => {
   await categoriesStore.deleteCategory(id)
 }
 
-// Обработчики для тегов
-const handleAddTag = async ({ name, color_name }) => {
-  await tagsStore.createTag({ name, color_name })
+const handleAddTag = async ({name, color}) => {
+  await tagsStore.createTag(name, color)
+}
+
+const handleEditTag = async (item) => {
+  await tagsStore.updateTag(item)
 }
 
 const handleDeleteTag = async (id) => {
@@ -89,12 +78,15 @@ const handleDeleteTag = async (id) => {
   await tagsStore.deleteTag(id)
 }
 
-// Обработчики для единиц измерения
 const handleAddUnit = async ({ name, default_value }) => {
-  await unitsStore.createUnit({ 
-    name, 
-    default_value: Number(default_value) || 0 
-  })
+  await unitsStore.createUnit(
+    name,
+    Number(default_value) || 0
+  )
+}
+
+const handleEditUnit = async (item) => {
+  await unitsStore.updateUnit(item.id, item.name, item.default_value)
 }
 
 const handleDeleteUnit = async (id) => {
@@ -102,7 +94,6 @@ const handleDeleteUnit = async (id) => {
   await unitsStore.deleteUnit(id)
 }
 
-// Вспомогательные методы
 const fetchUser = async () => {
   await authStore.fetchUser()
   user.value = authStore.user
@@ -159,7 +150,7 @@ onMounted(async () => {
   .crud-flex-row {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-card {
     flex-direction: column;
     align-items: center;
