@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from .schemas import UserCreate, UserRead, UserUpdate
-from .auth_config import auth_backend, fastapi_auth
 
+from .auth_config import auth_backend, fastapi_auth
+from .schemas import UserCreate, UserRead, UserUpdate
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 auth_router.include_router(fastapi_auth.get_auth_router(auth_backend))

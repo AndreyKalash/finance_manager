@@ -1,15 +1,15 @@
 from typing import Annotated
 from uuid import UUID
+
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models import Unit, User
+
+from src.auth.auth_config import fastapi_auth
 from src.database.core.db import get_async_session
-from src.database.database import (
-    select_data, update_data, upload_data, delete_data
-)
+from src.database.database import delete_data, select_data, update_data, upload_data
+from src.models import Unit, User
 
 from .schemas import UnitAddDTO, UnitDTO
-from src.auth.auth_config import fastapi_auth
 
 current_user = fastapi_auth.current_user()
 units_router = APIRouter(
@@ -25,7 +25,7 @@ async def get_units(
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     skip: Annotated[int, Query(ge=0, le=100)] = 0,
 ) -> list[UnitDTO]:
-    
+
     units = await select_data(session, Unit, current_user.id, limit, skip)
     return [unit.to_dto() for unit in units]
 
@@ -47,6 +47,7 @@ async def create_unit(
             detail=f"Error creating unit: {str(e)}",
         )
 
+
 @units_router.patch("/{unit_id}", response_model=UnitDTO)
 async def update_unit(
     unit_id: UUID,
@@ -59,9 +60,7 @@ async def update_unit(
         Unit.user_id == current_user.id,
     ]
 
-    updated_unit = await update_data(
-        session, Unit, unit_data.model_dump(), filters
-    )
+    updated_unit = await update_data(session, Unit, unit_data.model_dump(), filters)
 
     if not updated_unit:
         raise HTTPException(status_code=404, detail="Unit not found")
@@ -77,7 +76,7 @@ async def delete_unit(
 ):
     filters = [Unit.id == unit_id, Unit.user_id == current_user.id]
     deleted = await delete_data(session=session, model=Unit, filters=filters)
-    
+
     if not deleted:
         raise HTTPException(status_code=404, detail="Unit not found")
     return {"id": str(unit_id), "status": "deleted"}

@@ -1,18 +1,15 @@
 from typing import Annotated
 from uuid import UUID
+
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models import Category, User
-from src.database.core.db import get_async_session
 
-from .schemas import CategoryDTO, CategoryAddDTO
 from src.auth.auth_config import fastapi_auth
-from src.database.database import (
-    select_data,
-    upload_data,
-    delete_data,
-    update_data,
-)
+from src.database.core.db import get_async_session
+from src.database.database import delete_data, select_data, update_data, upload_data
+from src.models import Category, User
+
+from .schemas import CategoryAddDTO, CategoryDTO
 
 current_user = fastapi_auth.current_user()
 categories_router = APIRouter(
@@ -81,7 +78,7 @@ async def delete_category(
 ):
     filters = [Category.id == category_id, Category.user_id == current_user.id]
     deleted = await delete_data(session=session, model=Category, filters=filters)
-    
+
     if not deleted:
         raise HTTPException(status_code=404, detail="Category not found")
     return {"id": str(category_id), "status": "deleted"}

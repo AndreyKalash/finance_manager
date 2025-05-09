@@ -16,7 +16,7 @@
   
   <script setup>
   import { ref } from 'vue';
-  import ExpensesTable from './ExpensesTable.vue';
+  import ExpensesTable from './RecordsTable.vue';
   import ChartSection from './ChartSection.vue';
   
   const tableHeaders = ref([

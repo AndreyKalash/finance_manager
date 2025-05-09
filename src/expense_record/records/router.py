@@ -1,17 +1,21 @@
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends, Query
-from sqlalchemy import func, insert, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.models import Record, User
-from src.database.core.db import get_async_session
+from uuid import UUID
 
-from .schemas import RecordDTO, RecordAddDTO
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.auth.auth_config import fastapi_auth
+from src.database.core.db import get_async_session
+from src.database.database import delete_data, select_data, update_data, upload_data
+from src.models import Record, User, Tag
+
+from .schemas import RecordAddDTO, RecordDTO
 
 records_router = APIRouter(
     prefix="/records",
     tags=["records"],
 )
+current_user = fastapi_auth.current_user()
 
 
 @records_router.get("/", response_model=list[RecordDTO])
@@ -19,28 +23,63 @@ async def get_records(
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     skip: Annotated[int, Query(ge=0, le=100)] = 0,
     session: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(fastapi_auth.current_user()),
+    current_user: User = Depends(current_user),
 ) -> list[RecordDTO]:
 
-    records = []
-    return records
+    records = await select_data(session, Record, current_user.id, limit, skip)
+    return [record.to_dto() for record in records]
 
 
-@records_router.post("/")
-async def add_record(
+@records_router.post("/", response_model=RecordDTO)
+async def create_record(
     new_record: Annotated[RecordAddDTO, Body()],
     session: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(fastapi_auth.current_user()),
+    current_user: User = Depends(current_user),
 ):
-
-    db_record = new_record.model_dump()
-    db_record["user_id"] = current_user.id
-
-    statement = insert(Record).values(db_record)
     try:
-        await session.execute(statement)
-        await session.commit()
-        return {"status": "ok"}
-    except:
-        session.rollback()
-        return {"status": "nonono"}
+        tags = await select_data(session, Tag, current_user.id, filters=[Tag.id.in_(new_record.tags)])
+        db_record = Record(user_id=current_user.id, tags=tags, **new_record.model_dump(exclude={"tags"}))
+        await upload_data(session, db_record, ['tags', 'unit', 'category'])
+        return db_record.to_dto()
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating record: {str(e)}",
+        )
+
+
+@records_router.patch("/{record_id}")
+async def updste_record(
+    record_id: UUID,
+    record_data: Annotated[RecordAddDTO, Body()],
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_user),
+):
+    filters = [
+        Record.id == record_id,
+        Record.user_id == current_user.id,
+    ]
+
+    updated_record = await update_data(
+        session, Record, record_data.model_dump(), filters
+    )
+
+    if not updated_record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    return updated_record.to_dto()
+
+
+@records_router.delete("/{record_id}", status_code=200)
+async def delete_record(
+    record_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_user),
+):
+    filters = [Record.id == record_id, Record.user_id == current_user.id]
+    deleted = await delete_data(session=session, model=Record, filters=filters)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return {"id": str(record_id), "status": "deleted"}

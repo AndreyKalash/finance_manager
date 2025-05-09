@@ -1,5 +1,5 @@
-from src.auth.schemas import UserRead, UserCreate, UserUpdate
-from src.expense_record.records.schemas import RecordDTO, RecordAddDTO, RecordBaseDTO
-from src.expense_record.categories.schemas import CategoryDTO, CategoryAddDTO
-from src.expense_record.units.schemas import UnitDTO, UnitAddDTO
-from src.expense_record.tags.schemas import TagDTO, TagAddDTO
+from src.auth.schemas import UserCreate, UserRead, UserUpdate
+from src.expense_record.categories.schemas import CategoryAddDTO, CategoryDTO
+from src.expense_record.records.schemas import RecordAddDTO, RecordBaseDTO, RecordDTO
+from src.expense_record.tags.schemas import TagAddDTO, TagDTO
+from src.expense_record.units.schemas import UnitAddDTO, UnitDTO

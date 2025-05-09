@@ -1,6 +1,7 @@
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, EmailStr
-from fastapi_users.schemas import BaseUserCreate, BaseUser, BaseUserUpdate
+
+from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
+from pydantic import ConfigDict, EmailStr
 
 
 class UserRead(BaseUser):

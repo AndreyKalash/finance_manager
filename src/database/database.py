@@ -1,8 +1,9 @@
 from typing import Any
 from uuid import UUID
-from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import MappedClassProtocol, DeclarativeBase, selectinload
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeBase, MappedClassProtocol, selectinload
 
 
 async def select_data(
@@ -11,27 +12,29 @@ async def select_data(
     current_user_uuid: UUID,
     limit: int = 1000,
     skip: int = 0,
+    filters: list = [],
+    selectload: list = ["*"]
 ):
     query = (
         select(model)
-        .filter_by(user_id=current_user_uuid)
-        .options(selectinload("*"))
+        .options(selectinload(*selectload))
         .limit(limit)
         .offset(skip)
         .order_by(model.created_at)
+        .where(model.user_id==current_user_uuid, *filters)
     )
     result = await session.execute(query)
-    items_orm = result.scalars().all()
-    return items_orm
+    return result.scalars().all()
 
 
 async def upload_data(
     session: AsyncSession,
     model: MappedClassProtocol,
+    names: list = []
 ):
     session.add(model)
     await session.commit()
-    await session.refresh(model)
+    await session.refresh(model, attribute_names=[*names])
 
 
 async def update_data(

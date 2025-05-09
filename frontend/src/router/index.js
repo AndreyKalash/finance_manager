@@ -9,9 +9,9 @@ const routes = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/expenses',
-    name: 'expenses',
-    component: () => import ('@/views/ExpensesView.vue'),
+    path: '/records',
+    name: 'records',
+    component: () => import ('@/views/RecordsView.vue'),
     meta: {requiresAuth: true}
   },
   {

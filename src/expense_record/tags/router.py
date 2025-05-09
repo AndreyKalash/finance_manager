@@ -1,14 +1,15 @@
 from typing import Annotated
 from uuid import UUID
+
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models import Tag, User
-from src.database.core.db import get_async_session
-from src.database.database import select_data, update_data, upload_data, delete_data
 
-from .schemas import TagDTO, TagAddDTO
 from src.auth.auth_config import fastapi_auth
+from src.database.core.db import get_async_session
+from src.database.database import delete_data, select_data, update_data, upload_data
+from src.models import Tag, User
 
+from .schemas import TagAddDTO, TagDTO
 
 current_user = fastapi_auth.current_user()
 tags_router = APIRouter(

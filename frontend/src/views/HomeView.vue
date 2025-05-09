@@ -1,7 +1,7 @@
 <template>
   <main class="main">
-    <section class="expenses_chart_items">
-      <div class="expenses_chart container">
+    <section class="records_chart_items">
+      <div class="records_chart container">
         <h2 class="title primary">Траты за {{ currentMonth }}</h2>
         <div class="chart_container">
           <i class="fa-solid fa-caret-left secondary nav_arrow" @click="prevMonth"></i>
@@ -10,7 +10,7 @@
         </div>
       </div>
 
-      <div class="expenses_chart container">
+      <div class="records_chart container">
         <h2 class="title primary">Траты за {{ currentMonth }}</h2>
         <div class="chart_container">
           <i class="fa-solid fa-caret-left secondary nav_arrow" @click="prevMonth"></i>
@@ -20,12 +20,12 @@
       </div>
     </section>
 
-    <section class="expenses container">
+    <section class="records container">
       <div class="table_view">
-        <router-link to="/expenses" class="secondary" title="Перейти на страницу трат">
+        <router-link to="/records" class="secondary" title="Перейти на страницу трат">
           <h2 class="title primary">Таблица трат</h2>
         </router-link>
-        <ExpensesTable :items="recentExpenses" :headers="headers" />
+        <RecordsTable :items="recentRecords" :headers="headers" />
       </div>
     </section>
   </main>
@@ -35,7 +35,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from '@/api' // используйте ваш настроенный экземпляр axios
 import PieChart from '@/components/layout/PieChart.vue'
-import ExpensesTable from '@/components/ExpensesTable.vue'
+import RecordsTable from '@/components/RecordsTable.vue'
 
 const currentDate = ref(new Date())
 
@@ -45,7 +45,7 @@ const headers = ref([
   'Категория', 'Подкатегории', 'Действия'
 ])
 
-const recentExpenses = ref([])
+const recentRecords = ref([])
 const sumChartData = ref({ labels: [], datasets: [{ data: [], backgroundColor: [] }] })
 const countChartData = ref({ labels: [], datasets: [{ data: [], backgroundColor: [] }] })
 
@@ -58,11 +58,11 @@ const fetchData = async () => {
     const month = currentDate.value.getMonth() + 1
     const year = currentDate.value.getFullYear()
     // Замените на ваши реальные эндпоинты
-    const expensesRes = await axios.get(`/api/expenses?month=${month}&year=${year}`)
-    const sumChartRes = await axios.get(`/api/expenses/sum-chart?month=${month}&year=${year}`)
-    const countChartRes = await axios.get(`/api/expenses/count-chart?month=${month}&year=${year}`)
+    const recordsRes = await axios.get(`/api/records?month=${month}&year=${year}`)
+    const sumChartRes = await axios.get(`/api/records/sum-chart?month=${month}&year=${year}`)
+    const countChartRes = await axios.get(`/api/records/count-chart?month=${month}&year=${year}`)
 
-    recentExpenses.value = expensesRes.data
+    recentRecords.value = recordsRes.data
 
     sumChartData.value = {
       labels: sumChartRes.data.labels,
@@ -99,5 +99,29 @@ const nextMonth = () => {
 </script>
 
 <style scoped>
-@import '@/assets/main.css';
+.records_chart_items {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.records_chart {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    background-color: #1e1e1e;
+}
+.chart_container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.nav_arrow {
+    font-size: 30px;
+}
+.nav_arrow:hover{
+    cursor: pointer;
+}
+
 </style>

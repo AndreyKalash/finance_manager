@@ -1,9 +1,11 @@
-from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-import src.routers as ar
-import uvicorn
 import logging
+
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
+
+import src.routers as ar
 
 logging.basicConfig(level=logging.DEBUG)
 app = FastAPI()

@@ -1,10 +1,11 @@
 from typing import Annotated, Optional
-from fastapi import Depends, Query, Request, APIRouter
+
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from src.models import User
-from src.auth.auth_config import fastapi_auth
 
+from src.auth.auth_config import fastapi_auth
+from src.models import User
 
 pages_router = APIRouter(
     prefix="",

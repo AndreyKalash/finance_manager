@@ -1,15 +1,15 @@
 import uuid
-from sqlalchemy import ForeignKey, UUID, Index
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.database.core.db import Base
-import src.database.core.mapped_types as mt
 from typing import TYPE_CHECKING
 
+from sqlalchemy import UUID, ForeignKey, Index
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+import src.database.core.mapped_types as mt
+from src.database.core.db import Base
 from src.schemas import UnitDTO
 
-
 if TYPE_CHECKING:
-    from src.models import User, Record
+    from src.models import Record, User
 
 
 class Unit(Base):
@@ -36,8 +36,4 @@ class Unit(Base):
     )
 
     def to_dto(self):
-        return UnitDTO(
-            id=self.id, 
-            name=self.name, 
-            default_value=self.default_value
-            )
+        return UnitDTO(id=self.id, name=self.name, default_value=self.default_value)

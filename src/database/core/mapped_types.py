@@ -1,9 +1,9 @@
-from datetime import datetime
 import uuid
-from sqlalchemy.orm import mapped_column
-from sqlalchemy import UUID, DateTime, String
+from datetime import datetime
 from typing import Annotated
 
+from sqlalchemy import UUID, DateTime
+from sqlalchemy.orm import mapped_column
 
 UUID_PK = Annotated[
     uuid.UUID, mapped_column(UUID, primary_key=True, default=uuid.uuid4)

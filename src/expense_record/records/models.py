@@ -1,14 +1,16 @@
-from datetime import date
 import uuid
-from sqlalchemy import CheckConstraint, ForeignKey, Index, UUID, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.database.core.db import Base
-import src.database.core.mapped_types as mt
+from datetime import date
 from typing import TYPE_CHECKING
 
+from sqlalchemy import UUID, CheckConstraint, ForeignKey, Index
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+import src.database.core.mapped_types as mt
+from src.database.core.db import Base
+from src.schemas import RecordDTO, TagDTO, UnitDTO, CategoryDTO
 
 if TYPE_CHECKING:
-    from src.models import User, Unit, Category, Tag
+    from src.models import Category, Tag, Unit, User
 
 
 class Record(Base):
@@ -18,7 +20,7 @@ class Record(Base):
     record_date: Mapped[date]
     name: Mapped[str]
     unit_quantity: Mapped[float]
-    quantity: Mapped[int]
+    product_quantity: Mapped[int]
     price: Mapped[float]
 
     created_at: Mapped[mt.CREATED_AT]
@@ -50,3 +52,16 @@ class Record(Base):
         CheckConstraint("quantity > 0", name="check_product_quantity"),
         CheckConstraint("price >= 0", name="check_product_price"),
     )
+
+    def to_dto(self):
+        return RecordDTO(
+            id=self.id,
+            record_date=self.record_date,
+            name=self.name,
+            unit_quantity=self.unit_quantity,
+            product_quantity=self.product_quantity,
+            price=self.price,
+            unit=self.unit.to_dto(),
+            category=self.category.to_dto(),
+            tags=[tag.to_dto() for tag in self.tags]
+        )

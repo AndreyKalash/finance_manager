@@ -1,14 +1,14 @@
-from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy.orm import Mapped, relationship
-from src.database.core.db import Base
-import src.database.core.mapped_types as mt
-from sqlalchemy import Index
-
 from typing import TYPE_CHECKING
 
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
+from sqlalchemy import Index
+from sqlalchemy.orm import Mapped, relationship
+
+import src.database.core.mapped_types as mt
+from src.database.core.db import Base
 
 if TYPE_CHECKING:
-    from src.models import Unit, Category, Tag, Record
+    from src.models import Category, Record, Tag, Unit
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
