@@ -14,31 +14,34 @@ export const useTagsStore = defineStore("tags", {
       this.error = null;
       try {
         const response = await TagsAPI.getTags();
-        this.tags = response.data;
+        this.tags = response.data?.items || response.data || [];
       } catch (error) {
-        this.error =
-          error.response?.data?.detail || "Ошибка загрузки тега";
+        this.error = error.response?.data?.detail || "Ошибка загрузки тегов";
+        console.error("API Error:", error.response?.data); // Логирование ошибки
       } finally {
         this.loading = false;
       }
     },
 
-    async createTag(payload) {
+    async createTag(name, color) {
       this.error = null;
       try {
-        await TagsAPI.createTag(payload);
-        await this.fetchTags();
+        const { data } = await TagsAPI.createTag(name, color);
+        this.tags.push(data)
       } catch (error) {
         this.error =
           error.response?.data?.detail || "Ошибка создания тега";
       }
     },
 
-    async updateTag(id, name, categoryId) {
+    async updateTag({id, name, color}) {
       this.error = null;
       try {
-        await TagsAPI.updateTag(id, name, categoryId);
-        await this.fetchTags();
+        const { data } = await TagsAPI.updateTag(id, name, color);
+        const idx = this.tags.findIndex((t) => t.id === id);
+        if (idx !== -1) {
+          this.tags[idx] = { ...this.tags[idx], ...data}
+        }
       } catch (error) {
         this.error =
           error.response?.data?.detail || "Ошибка обновления тега";
@@ -49,7 +52,7 @@ export const useTagsStore = defineStore("tags", {
       this.error = null;
       try {
         await TagsAPI.deleteTag(id);
-        await this.fetchTags();
+        this.tags = this.tags.filter((t) => t.id !== id)
       } catch (error) {
         this.error =
           error.response?.data?.detail || "Ошибка удаления тега";

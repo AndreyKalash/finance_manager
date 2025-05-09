@@ -4,15 +4,6 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import MappedClassProtocol, DeclarativeBase, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .core.db import execute_statement
-
-
-async def insert_data_to_table(
-    table: MappedClassProtocol, data_rows: list[dict], session: AsyncSession
-):
-    statement = insert(table).values(data_rows)
-    await session.execute(statement)
-
 
 async def select_data(
     session: AsyncSession,
@@ -27,46 +18,42 @@ async def select_data(
         .options(selectinload("*"))
         .limit(limit)
         .offset(skip)
+        .order_by(model.created_at)
     )
     result = await session.execute(query)
     items_orm = result.scalars().all()
     return items_orm
 
 
-# async def select_records_data(
-#     session: AsyncSession,
-#     model: type[DeclarativeBase],
-#     current_user_uuid: UUID,
-#     limit: int,
-#     skip: int,
-# ):
-#     query = select(model).filter_by(user_id=current_user_uuid).options(selectinload('*')).limit(limit).offset(skip)
-#     result = await session.execute(query)
-#     items_orm = result.scalars().all()
-#     return items_orm
-
-
-async def insert_user_data(
+async def upload_data(
     session: AsyncSession,
-    model: type[DeclarativeBase],
-    values: dict[str, Any],
+    model: MappedClassProtocol,
 ):
-    statement = insert(model).values(values)
-    return await execute_statement(session, statement)
+    session.add(model)
+    await session.commit()
+    await session.refresh(model)
 
 
-async def update_user_data(
+async def update_data(
     session: AsyncSession,
     model: type[DeclarativeBase],
-    values: dict[str, Any],
+    update_data: dict[str, Any],
     filters: dict[str, Any],
-):
-    statement = update(model).values(values).filter_by(**filters)
-    return await execute_statement(session, statement)
+) -> DeclarativeBase | None:
+    stmt = update(model).where(*filters).values(**update_data).returning(model)
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    return result.scalar_one_or_none()
 
 
-async def delete_user_data(
+async def delete_data(
     session: AsyncSession, model: type[DeclarativeBase], filters: dict[str, Any]
 ):
-    statement = delete(model).filter_by(**filters)
-    return await execute_statement(session, statement)
+    stmt = delete(model).where(*filters)
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    return result.rowcount

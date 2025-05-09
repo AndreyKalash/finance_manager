@@ -1,16 +1,16 @@
 import api from './index'
 
 export const CategoriesAPI = {
-    async getCategories () {
+    async getCategories() {
         return api.get('/categories/')
     },
-    async createCategory (category_name, category_color) {
-        return api.post('/categories/', {category_name, category_color})  
+    async createCategory(name, color) {
+        return api.post('/categories/', {name, color})  
     },
-    async updateCategory (id, name) {
-        return api.put(`/categories/${id}`, { name })
+    async updateCategory(id, name, color) {
+        return api.patch(`/categories/${id}/`, { name, color })
     }, 
-    async deleteCategory (id) {
+    async deleteCategory(id) {
         return api.delete(`/categories/${id}`)
     }
 }

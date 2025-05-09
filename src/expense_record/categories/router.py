@@ -1,6 +1,6 @@
 from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import Category, User
 from src.database.core.db import get_async_session
@@ -9,11 +9,10 @@ from .schemas import CategoryDTO, CategoryAddDTO
 from src.auth.auth_config import fastapi_auth
 from src.database.database import (
     select_data,
-    insert_user_data,
-    delete_user_data,
-    update_user_data,
+    upload_data,
+    delete_data,
+    update_data,
 )
-
 
 current_user = fastapi_auth.current_user()
 categories_router = APIRouter(
@@ -31,72 +30,58 @@ async def get_categories(
 ) -> list[CategoryDTO]:
 
     categories = await select_data(session, Category, current_user.id, limit, skip)
-    # categories_dto = [
-    #     CategoryDTO.model_validate(row, from_attributes=True) for row in categories_orm
-    # ]
-    return categories
+    return [category.to_dto() for category in categories]
 
 
-@categories_router.post("/")
-async def post_category(
+@categories_router.post("/", response_model=CategoryDTO)
+async def create_category(
     new_category: Annotated[CategoryAddDTO, Body()],
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
-    db_category = new_category.model_dump()
-    db_category["user_id"] = current_user.id
-
-    is_added = await insert_user_data(session, Category, db_category)
-
-    resp_info = {}
-    if is_added:
-        resp_info.update(status="ok")
-    else:
-        resp_info.update(status="nono")
-
-    return resp_info
+    try:
+        db_category = Category(user_id=current_user.id, **new_category.model_dump())
+        await upload_data(session, db_category)
+        return db_category.to_dto()
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating category: {str(e)}",
+        )
 
 
 @categories_router.patch("/{category_id}")
 async def update_category(
     category_id: UUID,
-    updated_category: Annotated[CategoryAddDTO, Body()],
+    category_data: Annotated[CategoryAddDTO, Body()],
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
-    db_category = updated_category.model_dump()
-    filter_conditions = [
+    filters = [
         Category.id == category_id,
         Category.user_id == current_user.id,
     ]
 
-    is_added = await update_user_data(session, Category, db_category, filter_conditions)
+    updated_category = await update_data(
+        session, Category, category_data.model_dump(), filters
+    )
 
-    resp_info = {}
-    if is_added:
-        resp_info.update(status="ok")
-    else:
-        resp_info.update(status="nono")
+    if not updated_category:
+        raise HTTPException(status_code=404, detail="Category not found")
 
-    return resp_info
+    return updated_category.to_dto()
 
 
-@categories_router.delete("/")
+@categories_router.delete("/{category_id}", status_code=200)
 async def delete_category(
-    category_name: Annotated[CategoryDTO, Body()],
+    category_id: UUID,
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
-    filter_conditions = [
-        Category.name == category_name.name,
-        Category.user_id == current_user.id,
-    ]
-    is_deleted = await delete_user_data(session, Category, filter_conditions)
-
-    resp_info = {}
-    if is_deleted:
-        resp_info.update(status="ok")
-    else:
-        resp_info.update(status="nono")
-
-    return resp_info
+    filters = [Category.id == category_id, Category.user_id == current_user.id]
+    deleted = await delete_data(session=session, model=Category, filters=filters)
+    
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"id": str(category_id), "status": "deleted"}

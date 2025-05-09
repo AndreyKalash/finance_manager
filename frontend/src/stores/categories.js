@@ -23,24 +23,24 @@ export const useCategoriesStore = defineStore("categories", {
       }
     },
 
-    async createCategory({ categoriy_name, categoriy_color }) {
+    async createCategory(name, color) {
       this.error = null;
       try {
-        const { data } = await CategoriesAPI.createCategory({ categoriy_name, categoriy_color });
-        this.categories.push(data)
+        const { data } = await CategoriesAPI.createCategory(name, color);
+        this.categories.push(data);
       } catch (error) {
         this.error =
           error.response?.data?.detail || "Ошибка создания категории";
       }
     },
 
-    async updateCategory(id, name) {
+    async updateCategory({id, name, color}) {
       this.error = null;
       try {
-        const { data } = await CategoriesAPI.updateCategory(id, name);
-        const idx = this.categories.findIndex(c => c.id === id);
+        const { data } = await CategoriesAPI.updateCategory(id, name, color);
+        const idx = this.categories.findIndex((c) => c.id === id);
         if (idx !== -1) {
-            this.categories[idx] = { ...this.categories[idx], ...data };
+          this.categories[idx] = { ...this.categories[idx], ...data };
         }
       } catch (error) {
         this.error =
@@ -52,7 +52,7 @@ export const useCategoriesStore = defineStore("categories", {
       this.error = null;
       try {
         await CategoriesAPI.deleteCategory(id);
-        this.categories = this.categories.filter(c => c.id !== id)
+        this.categories = this.categories.filter((c) => c.id !== id);
       } catch (error) {
         this.error =
           error.response?.data?.detail || "Ошибка удаления категории";

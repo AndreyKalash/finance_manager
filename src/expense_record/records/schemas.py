@@ -11,11 +11,11 @@ from src.expense_record.tags.schemas import TagDTO
 
 class RecordBaseDTO(BaseModel):
     record_date: date = Field(default=date.today())
-    product_name: str
-    product_price: Decimal = Field(ge=0)
+    name: str
+    price: Decimal = Field(ge=0)
     unit_quantity: Decimal = Field(default=1, gt=0)
-    product_quantity: int = Field(default=1, gt=0)
-    
+    quantity: int = Field(default=1, gt=0)
+
 
 class RecordAddDTO(RecordBaseDTO):
     unit_id: UUID
@@ -27,8 +27,7 @@ class RecordDTO(RecordAddDTO):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
-    
+
     unit: UnitDTO
     category: CategoryDTO
     tags: list[TagDTO]
-    

@@ -1,14 +1,13 @@
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends
-from sqlalchemy import insert, select
+from uuid import UUID
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import Tag, User
 from src.database.core.db import get_async_session
-from src.database.database import select_data, insert_user_data, delete_user_data
+from src.database.database import select_data, update_data, upload_data, delete_data
 
 from .schemas import TagDTO, TagAddDTO
 from src.auth.auth_config import fastapi_auth
-
 
 
 current_user = fastapi_auth.current_user()
@@ -17,51 +16,65 @@ tags_router = APIRouter(
     tags=["tags"],
 )
 
+
 @tags_router.get("/", response_model=list[TagDTO])
 async def get_tags(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    skip: Annotated[int, Query(ge=0, le=100)] = 0,
 ) -> list[TagDTO]:
-
-    fields = [Tag.tag_name, Tag.tag_color]
-    filter_conditions = [Tag.user_id == current_user.id]
     tags = await select_data(session, Tag, current_user.id)
+    return [tag.to_dto() for tag in tags]
 
-    return tags
 
-
-@tags_router.post("/")
-async def post_tags(
-    new_tag: Annotated[TagDTO, Body()],
+@tags_router.post("/", response_model=TagDTO)
+async def create_tag(
+    new_tag: Annotated[TagAddDTO, Body()],
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
-    db_tag = new_tag.model_dump()
-    db_tag["user_id"] = current_user.id
-    is_added = await insert_user_data(session, Tag, db_tag)
+    try:
+        db_tag = Tag(user_id=current_user.id, **new_tag.model_dump())
+        await upload_data(session, db_tag)
+        return db_tag.to_dto()
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating tag: {str(e)}",
+        )
 
-    resp_info = {}
-    if is_added:
-        resp_info.update(status="ok")
-    else:
-        resp_info.update(status="nono")
 
-    return resp_info
-
-
-@tags_router.delete("/")
-async def delete_category(
-    tag_name: Annotated[TagDTO, Body()],
+@tags_router.patch("/{tag_id}")
+async def update_tag(
+    tag_id: UUID,
+    tag_data: Annotated[TagAddDTO, Body()],
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
-    filter_conditions = [Tag.name == tag_name.name, Tag.user_id == current_user.id]
-    is_deleted = await delete_user_data(session, Tag, filter_conditions)
+    filters = [
+        Tag.id == tag_id,
+        Tag.user_id == current_user.id,
+    ]
 
-    resp_info = {}
-    if is_deleted:
-        resp_info.update(status="ok")
-    else:
-        resp_info.update(status="nono")
+    updated_tag = await update_data(session, Tag, tag_data.model_dump(), filters)
 
-    return resp_info
+    if not updated_tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    return updated_tag.to_dto()
+
+
+@tags_router.delete("/{tag_id}", status_code=200)
+async def delete_tag(
+    tag_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_user),
+):
+    filters = [Tag.id == tag_id, Tag.user_id == current_user.id]
+    deleted = await delete_data(session=session, model=Tag, filters=filters)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return {"id": str(tag_id), "status": "deleted"}

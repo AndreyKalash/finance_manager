@@ -1,20 +1,20 @@
-"""init db
+"""init_db
 
-Revision ID: a14b50680d72
+Revision ID: 7842740dafcb
 Revises: 
-Create Date: 2024-09-02 13:39:22.253624
+Create Date: 2025-05-02 18:17:35.610662
 
 """
 
 from typing import Sequence, Union
 
 from alembic import op
-import fastapi_users_db_sqlalchemy
 import sqlalchemy as sa
+import fastapi_users_db_sqlalchemy
 
 
 # revision identifiers, used by Alembic.
-revision: str = "a14b50680d72"
+revision: str = "7842740dafcb"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,8 +42,8 @@ def upgrade() -> None:
     op.create_table(
         "category",
         sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("category_name", sa.String(), nullable=False),
-        sa.Column("category_color", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("color", sa.String(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
@@ -51,16 +51,19 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "idx_category_name_user",
+        "idx_category_color_user",
         "category",
-        ["category_name", "user_id"],
-        unique=True,
+        ["color", "user_id"],
+        unique=False,
+    )
+    op.create_index(
+        "idx_category_name_user", "category", ["name", "user_id"], unique=True
     )
     op.create_table(
         "tag",
         sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("tag_name", sa.String(), nullable=False),
-        sa.Column("tag_color", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("color", sa.String(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
@@ -68,12 +71,14 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "idx_tag_name_user", "tag", ["tag_name", "user_id"], unique=True
+        "idx_color_user", "tag", ["color", "user_id"], unique=False
     )
+    op.create_index("idx_name_user", "tag", ["name", "user_id"], unique=True)
     op.create_table(
         "unit",
         sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("unit_name", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("default_value", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
@@ -81,25 +86,29 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "idx_unit_name_user", "unit", ["unit_name", "user_id"], unique=True
+        "idx_unit_default_value_user",
+        "unit",
+        ["default_value", "user_id"],
+        unique=False,
+    )
+    op.create_index(
+        "idx_unit_name_user", "unit", ["name", "user_id"], unique=True
     )
     op.create_table(
         "record",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("record_date", sa.Date(), nullable=False),
-        sa.Column("product_name", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("unit_quantity", sa.Float(), nullable=False),
-        sa.Column("product_quantity", sa.Integer(), nullable=False),
-        sa.Column("product_price", sa.Float(), nullable=False),
+        sa.Column("quantity", sa.Integer(), nullable=False),
+        sa.Column("price", sa.Float(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("category_id", sa.UUID(), nullable=False),
         sa.Column("unit_id", sa.UUID(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
-        sa.CheckConstraint("product_price >= 0", name="check_product_price"),
-        sa.CheckConstraint(
-            "product_quantity > 0", name="check_product_quantity"
-        ),
+        sa.CheckConstraint("price >= 0", name="check_product_price"),
+        sa.CheckConstraint("quantity > 0", name="check_product_quantity"),
         sa.CheckConstraint("unit_quantity > 0", name="check_unit_quantity"),
         sa.ForeignKeyConstraint(
             ["category_id"], ["category.id"], ondelete="CASCADE"
@@ -108,9 +117,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        "idx_product_name", "record", ["product_name"], unique=False
-    )
+    op.create_index("idx_product_name", "record", ["name"], unique=False)
     op.create_index("idx_record_date", "record", ["record_date"], unique=False)
     op.create_table(
         "record_tag",
@@ -132,10 +139,13 @@ def downgrade() -> None:
     op.drop_index("idx_product_name", table_name="record")
     op.drop_table("record")
     op.drop_index("idx_unit_name_user", table_name="unit")
+    op.drop_index("idx_unit_default_value_user", table_name="unit")
     op.drop_table("unit")
-    op.drop_index("idx_tag_name_user", table_name="tag")
+    op.drop_index("idx_name_user", table_name="tag")
+    op.drop_index("idx_color_user", table_name="tag")
     op.drop_table("tag")
     op.drop_index("idx_category_name_user", table_name="category")
+    op.drop_index("idx_category_color_user", table_name="category")
     op.drop_table("category")
     op.drop_index(op.f("ix_user_email"), table_name="user")
     op.drop_index("idx_username", table_name="user")

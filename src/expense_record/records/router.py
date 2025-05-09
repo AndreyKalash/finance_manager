@@ -13,6 +13,7 @@ records_router = APIRouter(
     tags=["records"],
 )
 
+
 @records_router.get("/", response_model=list[RecordDTO])
 async def get_records(
     limit: Annotated[int, Query(ge=1, le=100)] = 100,

@@ -16,10 +16,10 @@ class Record(Base):
     id: Mapped[mt.UUID_PK]
 
     record_date: Mapped[date]
-    product_name: Mapped[str]
+    name: Mapped[str]
     unit_quantity: Mapped[float]
-    product_quantity: Mapped[int]
-    product_price: Mapped[float]
+    quantity: Mapped[int]
+    price: Mapped[float]
 
     created_at: Mapped[mt.CREATED_AT]
     updated_at: Mapped[mt.UPDATED_AT]
@@ -45,8 +45,8 @@ class Record(Base):
 
     __table_args__ = (
         Index("idx_record_date", "record_date"),
-        Index("idx_product_name", "product_name"),
+        Index("idx_product_name", "name"),
         CheckConstraint("unit_quantity > 0", name="check_unit_quantity"),
-        CheckConstraint("product_quantity > 0", name="check_product_quantity"),
-        CheckConstraint("product_price >= 0", name="check_product_price"),
+        CheckConstraint("quantity > 0", name="check_product_quantity"),
+        CheckConstraint("price >= 0", name="check_product_price"),
     )

@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import src.routers as ar
@@ -9,9 +8,16 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 app = FastAPI()
 
+origins = [
+    "http://localhost:8080",
+    "http://localhost",
+    "http://127.0.0.1:8080",
+    "http://192.168.0.11:8080",  # Без слеша в конце
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,5 +34,5 @@ app.include_router(ar.records_router)
 app.include_router(ar.pages_router)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run(app=app, reload=True)

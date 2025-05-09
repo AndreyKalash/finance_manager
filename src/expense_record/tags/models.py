@@ -4,6 +4,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database.core.db import Base
 import src.database.core.mapped_types as mt
 from typing import TYPE_CHECKING
+from src.schemas import TagDTO
+
 
 if TYPE_CHECKING:
     from src.models import User, Record
@@ -12,8 +14,8 @@ if TYPE_CHECKING:
 class Tag(Base):
     __tablename__ = "tag"
     id: Mapped[mt.UUID_PK]
-    tag_name: Mapped[str]
-    tag_color: Mapped[str]
+    name: Mapped[str]
+    color: Mapped[str]
 
     created_at: Mapped[mt.CREATED_AT]
     updated_at: Mapped[mt.UPDATED_AT]
@@ -27,7 +29,13 @@ class Tag(Base):
         "Record", secondary="record_tag", back_populates="tags"
     )
 
-    __table_args__ = (Index("idx_tag_name_user", "tag_name", "user_id", unique=True),)
+    __table_args__ = (
+        Index("idx_name_user", "name", "user_id", unique=True),
+        Index("idx_color_user", "color", "user_id"),
+    )
+
+    def to_dto(self):
+        return TagDTO(id=self.id, name=self.name, color=self.color)
 
 
 class RecordTag(Base):

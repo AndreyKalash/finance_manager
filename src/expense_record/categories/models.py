@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database.core.db import Base
 import src.database.core.mapped_types as mt
 from typing import TYPE_CHECKING
+from src.schemas import CategoryDTO
 
 if TYPE_CHECKING:
     from src.models import User, Record
@@ -12,8 +13,8 @@ if TYPE_CHECKING:
 class Category(Base):
     __tablename__ = "category"
     id: Mapped[mt.UUID_PK]
-    category_name: Mapped[str]
-    category_color: Mapped[str]
+    name: Mapped[str]
+    color: Mapped[str]
 
     created_at: Mapped[mt.CREATED_AT]
     updated_at: Mapped[mt.UPDATED_AT]
@@ -26,5 +27,9 @@ class Category(Base):
     records: Mapped[list["Record"]] = relationship("Record", back_populates="category")
 
     __table_args__ = (
-        Index("idx_category_name_user", "category_name", "user_id", unique=True),
+        Index("idx_category_name_user", "name", "user_id", unique=True),
+        Index("idx_category_color_user", "color", "user_id"),
     )
+
+    def to_dto(self):
+        return CategoryDTO(id=self.id, name=self.name, color=self.color)

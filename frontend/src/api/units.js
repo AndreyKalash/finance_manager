@@ -1,16 +1,16 @@
 import api from './index'
 
 export const UnitsAPI = {
-    async getUnits () {
-        api.get('/units/')
+    async getUnits() {
+        return api.get('/units/')
     },
-    async createUnit (name, categoryId) {
-        api.post('/units/', { name, category_id: categoryId })
+    async createUnit(name, default_value) {
+        return api.post('/units/', { name, default_value })
     },
-    async updateUnit (id, name, categoryId) {
-        api.put(`/units/${id}`, { name, category_id: categoryId })
+    async updateUnit(id, name, default_value) {
+        return api.patch(`/units/${id}`, { name, default_value })
     },
-    async deleteUnit (id) {
-        api.delete(`/units/${id}`)
+    async deleteUnit(id) {
+        return api.delete(`/units/${id}`)
     }
 }

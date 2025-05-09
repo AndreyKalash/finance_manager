@@ -1,10 +1,10 @@
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class CategoryAddDTO(BaseModel):
-    category_name: str
-    category_color: str
+    name: str
+    color: str
 
 
 class CategoryDTO(CategoryAddDTO):

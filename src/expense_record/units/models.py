@@ -5,6 +5,8 @@ from src.database.core.db import Base
 import src.database.core.mapped_types as mt
 from typing import TYPE_CHECKING
 
+from src.schemas import UnitDTO
+
 
 if TYPE_CHECKING:
     from src.models import User, Record
@@ -13,7 +15,8 @@ if TYPE_CHECKING:
 class Unit(Base):
     __tablename__ = "unit"
     id: Mapped[mt.UUID_PK]
-    unit_name: Mapped[str]
+    name: Mapped[str]
+    default_value: Mapped[float]
 
     created_at: Mapped[mt.CREATED_AT]
     updated_at: Mapped[mt.UPDATED_AT]
@@ -27,4 +30,14 @@ class Unit(Base):
 
     repr_col_num = 2
 
-    __table_args__ = (Index("idx_unit_name_user", "unit_name", "user_id", unique=True),)
+    __table_args__ = (
+        Index("idx_unit_name_user", "name", "user_id", unique=True),
+        Index("idx_unit_default_value_user", "default_value", "user_id"),
+    )
+
+    def to_dto(self):
+        return UnitDTO(
+            id=self.id, 
+            name=self.name, 
+            default_value=self.default_value
+            )

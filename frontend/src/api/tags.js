@@ -1,16 +1,16 @@
 import api from './index'
 
 export const TagsAPI = {
-    async getTags () {
-        api.get('/tags/')
+    async getTags() {
+        return api.get('/tags/')
     },
-    async createTag (name, categoryId) {
-        api.post('/tags/', { name, category_id: categoryId })
+    async createTag(name, color) {
+        return api.post('/tags/', {name, color})
     },
-    async updateTag (id, name, categoryId) {
-        api.put(`/tags/${id}`, { name, category_id: categoryId })
+    async updateTag(id, name, color) {
+        return api.patch(`/tags/${id}/`, {name, color})
     },
-    async deleteTag (id) {
-        api.delete(`/tags/${id}`)
+    async deleteTag(id) {
+        return api.delete(`/tags/${id}`)
     }
 }
