@@ -9,11 +9,11 @@ export const useRecordsStore = defineStore("records", {
   }),
 
   actions: {
-    async fetchRecords() {
+    async fetchRecords(limit=50, skip=0) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await RecordsAPI.getRecords();
+        const response = await RecordsAPI.getRecords(limit, skip);
         this.records = response.data;
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки записей";

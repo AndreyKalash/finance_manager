@@ -2,20 +2,31 @@
   <main class="main">
     <section class="records_chart_items">
       <div class="records_chart container">
-        <h2 class="title primary">Траты за {{ currentMonth }}</h2>
         <div class="chart_container">
-          <i class="fa-solid fa-caret-left secondary nav_arrow" @click="prevMonth"></i>
-          <PieChart :chartData="sumChartData" />
-          <i class="fa-solid fa-caret-right secondary nav_arrow" @click="nextMonth"></i>
+          <button class="nav_button left" @click="prevMonth" aria-label="Предыдущий месяц">
+            <font-awesome-icon :icon="['fas', 'chevron-left']" />
+          </button>
+          <div class="center_content">
+            <h2 class="title primary">Траты за {{ currentMonth }}</h2>
+            <PieChart :chartData="sumChartData" />
+          </div>
         </div>
       </div>
 
       <div class="records_chart container">
-        <h2 class="title primary">Траты за {{ currentMonth }}</h2>
         <div class="chart_container">
-          <i class="fa-solid fa-caret-left secondary nav_arrow" @click="prevMonth"></i>
-          <PieChart :chartData="countChartData" />
-          <i class="fa-solid fa-caret-right secondary nav_arrow" @click="nextMonth"></i>
+          <div class="center_content">
+            <h2 class="title primary">Количество трат за {{ currentMonth }}</h2>
+            <PieChart :chartData="countChartData" />
+          </div>
+          <button
+            class="nav_button right"
+            :disabled="isCurrentMonth"
+            @click="nextMonth"
+            aria-label="Следующий месяц"
+          >
+            <font-awesome-icon :icon="['fas', 'chevron-right']" />
+          </button>
         </div>
       </div>
     </section>
@@ -33,95 +44,158 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from '@/api' // используйте ваш настроенный экземпляр axios
 import PieChart from '@/components/layout/PieChart.vue'
 import RecordsTable from '@/components/RecordsTable.vue'
+import { useRecordsStore } from '@/stores/records'
+import { useStatsStore } from '@/stores/stats'
 
 const currentDate = ref(new Date())
+const recordsStore = useRecordsStore()
+const statsStore = useStatsStore()
 
-const headers = ref([
+const headers = [
   'Дата', 'Название', 'Цена товара', 'Единица измерения',
   'Количество единицы измерения', 'Количество товара',
-  'Категория', 'Подкатегории', 'Действия'
-])
-
-const recentRecords = ref([])
-const sumChartData = ref({ labels: [], datasets: [{ data: [], backgroundColor: [] }] })
-const countChartData = ref({ labels: [], datasets: [{ data: [], backgroundColor: [] }] })
+  'Категория', 'Теги'
+]
 
 const currentMonth = computed(() => {
   return currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
 })
 
-const fetchData = async () => {
-  try {
-    const month = currentDate.value.getMonth() + 1
-    const year = currentDate.value.getFullYear()
-    // Замените на ваши реальные эндпоинты
-    const recordsRes = await axios.get(`/api/records?month=${month}&year=${year}`)
-    const sumChartRes = await axios.get(`/api/records/sum-chart?month=${month}&year=${year}`)
-    const countChartRes = await axios.get(`/api/records/count-chart?month=${month}&year=${year}`)
+const month = computed(() => currentDate.value.getMonth() + 1)
+const year = computed(() => currentDate.value.getFullYear())
 
-    recentRecords.value = recordsRes.data
+const recentRecords = computed(() => recordsStore.records.slice(0, 10))
 
-    sumChartData.value = {
-      labels: sumChartRes.data.labels,
-      datasets: [{
-        data: sumChartRes.data.data,
-        backgroundColor: sumChartRes.data.backgroundColor
-      }]
-    }
+const sumChartData = computed(() => ({
+  labels: statsStore.categoriesMonthSum.map(item => item.category),
+  datasets: [{
+    data: statsStore.categoriesMonthSum.map(item => item.sum),
+    backgroundColor: statsStore.categoriesMonthSum.map(item => item.color)
+  }]
+}))
 
-    countChartData.value = {
-      labels: countChartRes.data.labels,
-      datasets: [{
-        data: countChartRes.data.data,
-        backgroundColor: countChartRes.data.backgroundColor
-      }]
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки данных:', error)
-  }
+const countChartData = computed(() => ({
+  labels: statsStore.categoriesMonthCount.map(item => item.category),
+  datasets: [{
+    data: statsStore.categoriesMonthCount.map(item => item.count),
+    backgroundColor: statsStore.categoriesMonthCount.map(item => item.color)
+  }]
+}))
+
+const isCurrentMonth = computed(() => {
+  const now = new Date()
+  return (
+    currentDate.value.getMonth() === now.getMonth() &&
+    currentDate.value.getFullYear() === now.getFullYear()
+  )
+})
+
+const fetchStats = async () => {
+  await statsStore.fetchCategoriesMonthSum(month.value, year.value)
+  await statsStore.fetchCategoriesMonthCount(month.value, year.value)
 }
+
+const fetchData = async () => {
+  await recordsStore.fetchRecords()
+  await fetchStats()
+}
+
+const prevMonth = async () => {
+  const d = new Date(currentDate.value)
+  d.setMonth(d.getMonth() - 1)
+  currentDate.value = d
+  await fetchStats()
+}
+
+const nextMonth = async () => {
+  const d = new Date(currentDate.value)
+  d.setMonth(d.getMonth() + 1)
+  currentDate.value = d
+  await fetchStats()
+}
+
 
 onMounted(fetchData)
-
-const prevMonth = () => {
-  currentDate.value.setMonth(currentDate.value.getMonth() - 1)
-  fetchData()
-}
-
-const nextMonth = () => {
-  currentDate.value.setMonth(currentDate.value.getMonth() + 1)
-  fetchData()
-}
-
 </script>
 
 <style scoped>
 .records_chart_items {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-.records_chart {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    background-color: #1e1e1e;
-}
-.chart_container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.nav_arrow {
-    font-size: 30px;
-}
-.nav_arrow:hover{
-    cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
+.records_chart {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.chart_container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 0;
+  gap: 0;
+  min-height: 370px;
+}
+
+.center_content {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.nav_button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #bb86fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav_button:hover {
+  background-color: #3a3a3a;
+  color: #03dac6;
+  transform: scale(1.1);
+}
+
+.nav_button:active {
+  transform: scale(0.95);
+}
+
+.nav_button i {
+  font-size: 18px;
+}
+
+.nav_button.left {
+  margin-left: 10px;
+}
+
+.nav_button.right {
+  margin-right: 10px;
+}
+
+.nav_button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 </style>

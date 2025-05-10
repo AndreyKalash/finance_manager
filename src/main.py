@@ -34,6 +34,7 @@ app.include_router(ar.tags_router)
 app.include_router(ar.categories_router)
 app.include_router(ar.records_router)
 app.include_router(ar.pages_router)
+app.include_router(ar.stats_router)
 
 
 if __name__ == "__main__":
