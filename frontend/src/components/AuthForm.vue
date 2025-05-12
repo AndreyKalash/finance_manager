@@ -59,7 +59,6 @@ const handleLogin = async () => {
       password: formData.value.password
     });
 
-    await authStore.fetchUser()
     const redirectPath = authStore.redirectPath || '/';
     router.push(redirectPath);
 
@@ -89,9 +88,6 @@ const handleRegister = async () => {
     console.error('Registration failed:', error);
   }
 };
-
-
-
 </script>
 
 <style scoped>

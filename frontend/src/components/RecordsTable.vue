@@ -118,7 +118,7 @@ async function createRecord(record) {
   formModalVisible.value = false;
 }
 
-async function updateRecord(record) {
+async function updateRecord(record) {  
   await recordsStore.updateRecord(record);
   formModalVisible.value = false;
   editingRecord.value = null;

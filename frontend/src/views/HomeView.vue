@@ -48,10 +48,18 @@ import PieChart from '@/components/layout/PieChart.vue'
 import RecordsTable from '@/components/RecordsTable.vue'
 import { useRecordsStore } from '@/stores/records'
 import { useStatsStore } from '@/stores/stats'
+import { useCategoriesStore } from '@/stores/categories'
+import { useAuthStore } from '@/stores/auth'
+import { useTagsStore } from '@/stores/tags'
+import { useUnitsStore } from '@/stores/units'
 
 const currentDate = ref(new Date())
 const recordsStore = useRecordsStore()
 const statsStore = useStatsStore()
+const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
+const tagsStore = useTagsStore()
+const unitsStore = useUnitsStore()
 
 const headers = [
   'Дата', 'Название', 'Цена товара', 'Единица измерения',
@@ -97,11 +105,6 @@ const fetchStats = async () => {
   await statsStore.fetchCategoriesMonthCount(month.value, year.value)
 }
 
-const fetchData = async () => {
-  await recordsStore.fetchRecords()
-  await fetchStats()
-}
-
 const prevMonth = async () => {
   const d = new Date(currentDate.value)
   d.setMonth(d.getMonth() - 1)
@@ -116,8 +119,15 @@ const nextMonth = async () => {
   await fetchStats()
 }
 
+onMounted(async () => {
+  await authStore.fetchUser()
+  await categoriesStore.fetchCategories()
+  await tagsStore.fetchTags()
+  await unitsStore.fetchUnits()
+  await recordsStore.fetchRecords()
+  await fetchStats()
+})
 
-onMounted(fetchData)
 </script>
 
 <style scoped>

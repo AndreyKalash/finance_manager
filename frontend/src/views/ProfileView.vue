@@ -35,14 +35,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { ref, computed } from 'vue'
 import { useCategoriesStore } from '@/stores/categories'
 import { useTagsStore } from '@/stores/tags'
 import { useUnitsStore } from '@/stores/units'
 import ItemList from '@/components/layout/ItemList.vue'
 
-const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
 const tagsStore = useTagsStore()
 const unitsStore = useUnitsStore()
@@ -94,24 +92,10 @@ const handleDeleteUnit = async (id) => {
   await unitsStore.deleteUnit(id)
 }
 
-const fetchUser = async () => {
-  await authStore.fetchUser()
-  user.value = authStore.user
-}
-
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString()
 }
 
-// Инициализация данных
-onMounted(async () => {
-  await fetchUser()
-  await Promise.all([
-    categoriesStore.fetchCategories(),
-    tagsStore.fetchTags(),
-    unitsStore.fetchUnits()
-  ])
-})
 </script>
 
 <style scoped>
