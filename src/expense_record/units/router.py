@@ -26,7 +26,7 @@ async def get_units(
     skip: Annotated[int, Query(ge=0, le=100)] = 0,
 ) -> list[UnitDTO]:
 
-    units = await select_data(session, Unit, current_user.id, limit, skip)
+    units = await select_data(session, Unit, current_user.id, limit=limit, skip=skip)
     return [unit.to_dto() for unit in units]
 
 

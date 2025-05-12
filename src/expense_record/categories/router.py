@@ -26,7 +26,7 @@ async def get_categories(
     skip: Annotated[int, Query(ge=0, le=100)] = 0,
 ) -> list[CategoryDTO]:
 
-    categories = await select_data(session, Category, current_user.id, limit, skip)
+    categories = await select_data(session, Category, current_user.id, limit=limit, skip=skip)
     return [category.to_dto() for category in categories]
 
 

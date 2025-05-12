@@ -7,8 +7,8 @@ export const RecordsAPI = {
     async createRecord(record) {
         return api.post('/records/', {...record})  
     },
-    async updateRecord(id, name, color) {
-        return api.patch(`/records/${id}/`, { name, color })
+    async updateRecord(record) {
+        return api.patch(`/records/${record.id}`, {...record})
     }, 
     async deleteRecord(id) {
         return api.delete(`/records/${id}`)

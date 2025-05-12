@@ -25,7 +25,7 @@ async def get_tags(
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     skip: Annotated[int, Query(ge=0, le=100)] = 0,
 ) -> list[TagDTO]:
-    tags = await select_data(session, Tag, current_user.id)
+    tags = await select_data(session, Tag, current_user.id, limit=limit, skip=skip)
     return [tag.to_dto() for tag in tags]
 
 

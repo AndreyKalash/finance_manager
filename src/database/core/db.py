@@ -10,14 +10,11 @@ async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
-    repr_col_num = 3
-    repr_extra_cols = tuple()
 
     def __repr__(self) -> str:
         cols = []
         for i, col in enumerate(self.__table__.columns.keys()):
-            if col in self.repr_extra_cols or i < self.repr_col_num:
-                cols.append(f"{col}={getattr(self, col)}")
+            cols.append(f"{col}={getattr(self, col)}")
 
         return f"<{self.__class__.__table__}: {', '.join(cols)}>"
 
