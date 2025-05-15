@@ -2,79 +2,85 @@
   <div class="item-list">
     <h3 class="title primary">{{ title }}</h3>
     <div class="add-form">
-      <div class="combobox-wrapper" ref="comboboxRef">
-        <input
-          class="text-input"
-          ref="editInput"
-          v-model="newName"
-          :placeholder="placeholder"
-          @input="filterOptions"
-          @focus="showDropdown = true"
-        />
-        <div class="dropdown" v-show="showDropdown">
-          <ul class="options-list">
-            <li
-              v-for="item in filteredItems"
-              :key="item.id"
-              class="option-item"
-            >
-              <template v-if="editingId === item.id">
-                <div class="edit-wrapper">
-                  <input
-                    v-model="editName"
-                    class="edit-input"
-                    :placeholder="placeholder"
-                    @keyup.enter="saveEdit(item)"
-                    autofocus
-                  />
-                  <ColorPicker
-                    v-if="showColor"
-                    v-model:pureColor="editColor"
-                    picker-type="chrome"
-                    disable-alpha
-                    class="color-picker"
+      <AppDropdown
+        ref="dropdownRef"
+        :items="filteredItems"
+        :show-color="showColor"
+        :placeholder="placeholder"
+        :name-key="nameKey"
+        :color-key="colorKey"
+      >
+        <template #item="{ item }">
+          <li class="option-item">
+            <template v-if="editingId === item.id">
+              <div class="edit-wrapper" ref="editWrapperRef">
+                <ColorPicker
+                  @click.stop
+                  v-model:pureColor="editColor"
+                  picker-type="chrome"
+                  disable-alpha
+                  class="color-badge color-picker-inline"
+                  :style="{ backgroundColor: editColor }"
+                  inline
                   />
                   <input
-                    v-if="showDefaultValue"
-                    v-model.number="editDefaultValue"
-                    class="number_input"
-                    @keyup.enter="saveEdit(item)"
-                    step="0.01"
-                    type="number"
-                    min="0"
-                    placeholder="Значение по умолчанию"
+                  @click.stop
+                  v-model="editName"
+                  class="edit-input"
+                  :placeholder="placeholder"
+                  @keyup.enter="saveEdit(item)"
+                  autofocus
                   />
-                  <div class="edit-buttons">
-                    <button class="save-btn" @click.stop="saveEdit(item)">💾</button>
-                    <button class="cancel-btn" @click.stop="cancelEdit">✖️</button>
-                  </div>
+                  <input
+                  v-if="showDefaultValue"
+                  @click.stop
+                  v-model.number="editDefaultValue"
+                  class="number_input"
+                  @keyup.enter="saveEdit(item)"
+                  step="0.01"
+                  type="number"
+                  min="0"
+                  placeholder="Значение по умолчанию"
+                />
+                <div class="list-actions">
+                  <button class="save-btn" @click.stop="saveEdit(item)">
+                    💾
+                  </button>
+                  <button class="cancel-btn" @click.stop="cancelEdit">
+                    ✖️
+                  </button>
                 </div>
-              </template>
-              <template v-else>
-                <div class="item-content">
-                  <span
-                    class="color-badge"
-                    v-if="showColor"
-                    :style="{ backgroundColor: item[colorKey] || '#000000' }"
-                    title="Цвет"
-                  ></span>
-                  <span class="item-text">{{ item[nameKey] }}</span>
-                  <span v-if="showDefaultValue" class="default-value">
-                    ({{ item.default_value }})
-                  </span>
-                </div>
-                <div class="item-actions">
-                  <button class="edit-btn" @click.stop="startEdit(item)">✏️</button>
-                  <button class="delete-btn" @click.stop="$emit('delete', item.id)">🗑️</button>
-                </div>
-              </template>
-            </li>
-            <li v-if="filteredItems.length === 0" class="option-item empty">
-              Нет записей
-            </li>
-          </ul>
-        </div>
-      </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="item-content">
+                <span
+                  class="color-badge"
+                  v-if="showColor"
+                  :style="{ backgroundColor: item[colorKey] || '#000000' }"
+                  title="Цвет"
+                ></span>
+                <span class="item-text">{{ item[nameKey] }}</span>
+                <span v-if="showDefaultValue" class="default-value">
+                  ({{ item.default_value }})
+                </span>
+              </div>
+              <div class="item-actions">
+                <button class="edit-btn" @click.stop="startEdit(item)">
+                  ✏️
+                </button>
+                <button
+                  class="delete-btn"
+                  @click.stop="$emit('delete', item.id)"
+                >
+                  🗑️
+                </button>
+              </div>
+            </template>
+          </li>
+        </template>
+      </AppDropdown>
+
       <ColorPicker
         v-if="showColor"
         v-model:pureColor="newColor"
@@ -100,6 +106,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { ColorPicker } from "vue3-colorpicker";
 import "vue3-colorpicker/style.css";
+import AppDropdown from "./AppDropdown.vue";
 
 const props = defineProps({
   title: String,
@@ -113,18 +120,27 @@ const props = defineProps({
 
 const emit = defineEmits(["add", "edit", "delete"]);
 
-const newName = ref("");
-const newColor = ref("#3ddac9");
-const newDefaultValue = ref(0);
-const showDropdown = ref(false);
 const filteredItems = ref([]);
+const dropdownRef = ref(null);
+const editWrapperRef = ref(null);
 
 const editingId = ref(null);
+
+const newName = ref("");
 const editName = ref("");
+
+const newColor = ref("#3ddac9");
 const editColor = ref("#3ddac9");
+
+const newDefaultValue = ref(0);
 const editDefaultValue = ref(0);
 
-const comboboxRef = ref(null);
+function resetForm() {
+  newName.value = "";
+  newColor.value = "#3ddac9";
+  newDefaultValue.value = 0;
+  dropdownRef.value?.closeDropdown();
+}
 
 const filterOptions = () => {
   if (!newName.value) {
@@ -176,31 +192,38 @@ function rgbToHex(rgb) {
 
 const handleAdd = () => {
   if (!newName.value.trim()) return;
-  let color = props.showColor ? rgbToHex(newColor.value) : undefined;
+
   const payload = {
     [props.nameKey]: newName.value.trim(),
-    ...(props.showColor && { [props.colorKey]: color }),
-    ...(props.showDefaultValue && { default_value: newDefaultValue.value }),
+    ...(props.showColor && {
+      [props.colorKey]: newColor.value.startsWith("#")
+        ? newColor.value
+        : rgbToHex(newColor.value),
+    }),
+    ...(props.showDefaultValue && {
+      default_value: Number(newDefaultValue.value) || 0,
+    }),
   };
+
   emit("add", payload);
-  setTimeout(() => {
-    filterOptions();
-  }, 0);
-  newName.value = "";
-  newColor.value = "#3ddac9";
-  newDefaultValue.value = 0;
-  showDropdown.value = false;
+  resetForm();
 };
 
 const handleClickOutside = (event) => {
+  const dropdownEl = dropdownRef.value?.$el || dropdownRef.value;
+  const editEl = editWrapperRef?.value;
+
   if (
-    comboboxRef.value &&
-    !comboboxRef.value.contains(event.target) &&
-    !editingId.value
+    (dropdownEl && dropdownEl.contains(event.target)) ||
+    (editEl && editEl.contains(event.target)) ||
+    event.target.closest('.vc-colorpicker')
   ) {
-    showDropdown.value = false;
+    return;
   }
+  dropdownRef.value?.closeDropdown();
+  cancelEdit()
 };
+
 
 onMounted(() => {
   filterOptions();
@@ -232,10 +255,16 @@ watch(
   display: inline-block;
   width: 18px;
   height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   border-radius: 4px;
   margin-right: 8px;
   border: 1px solid #444;
   cursor: default;
+}
+
+.color-picker >>> .vc-color-wrap {
+  pointer-events: none;
 }
 
 .default-value {
@@ -254,6 +283,15 @@ watch(
 .combobox-wrapper {
   position: relative;
   flex: 1;
+}
+
+.edit-buttons {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
 }
 
 .dropdown {
@@ -278,11 +316,11 @@ watch(
 
 .option-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  min-height: 40px;
 }
 
 .option-item:hover {
@@ -310,16 +348,19 @@ watch(
 }
 
 .item-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   margin-left: auto;
+  display: flex;
+  gap: 8px;
+  padding-left: 16px;
 }
 
 .color-picker {
+  position: absolute;
+  z-index: 1001;
   width: 40px;
   height: 40px;
-  border: 1px solid #444;
+  top: 100%;
+  left: 0;
 }
 
 .text-input {
@@ -327,7 +368,7 @@ watch(
 }
 
 .number_input {
-  width: 7ch !important; 
+  width: 20px !important;
   max-width: 100%;
   min-width: 4ch;
   box-sizing: content-box;
@@ -337,6 +378,7 @@ watch(
   border-radius: 4px;
   color: white;
   margin-right: 8px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 600px) {
@@ -344,6 +386,7 @@ watch(
     width: 6ch !important;
   }
 }
+
 input {
   padding: 8px;
   border: 1px solid #444;
@@ -400,8 +443,24 @@ input {
 
 .edit-wrapper {
   display: flex;
-  gap: 8px;
   align-items: center;
   width: 100%;
+  position: relative;
 }
+
+.add-form {
+  z-index: 1;
+}
+
+.color-picker-inline :deep(.vc-color-wrap),
+.color-picker-inline :deep(.vc-color-wrap__trigger) {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
 </style>

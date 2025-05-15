@@ -10,47 +10,47 @@
         <input id="record-name" v-model="formData.name" type="text" placeholder="Название" required />
 
         <label for="record-price">Цена</label>
-        <input id="record-price" v-model.number="formData.price" type="number" step="0.01" placeholder="Цена" required />
+        <input id="record-price" v-model.number="formData.price" type="number" step="0.01" placeholder="Цена"
+          required />
 
         <label for="record-unit">Единица измерения</label>
-        <select id="record-unit" v-model="formData.unit_id" required>
-          <option disabled value="" hidden>Выберите единицу</option>
-          <option v-for="unit in units" :key="unit.id" :value="unit.id">
-            {{ unit.name }}
-          </option>
-        </select>
+        <AppDropdown ref="unitDropdown" @select="handleUnitSelect" v-model="formData.unit_id" :show-color="false"
+          :items="units" placeholder="Выберите единицу" name-key="name" class="dropdown">
+          <template #item="{ item }">
+            <div>
+              <span>{{ item.name }}</span>
+              <span class="default-value">({{ item.default_value }})</span>
+            </div>
+          </template>
+        </AppDropdown>
 
         <label for="record-unit-quantity">Количество единиц измерения</label>
         <input id="record-unit-quantity" v-model.number="formData.unit_quantity" type="number"
-          placeholder="Кол-во ед." required />
+          placeholder="Кол-во ед." />
 
         <label for="record-product-quantity">Количество товара</label>
         <input id="record-product-quantity" v-model.number="formData.product_quantity" type="number"
-          placeholder="Кол-во товара" required />
+          placeholder="Кол-во товара" />
 
-        <label for="record-category">Категория</label>
-        <div class="custom-select">
-          <select id="record-category" v-model="formData.category_id" required>
-            <option disabled value="" hidden>Выберите категорию</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-              {{ cat.name }}
-            </option>
-          </select>
-          <div class="color-box" v-if="selectedCategory" 
-            :style="{ backgroundColor: selectedCategory.color }"></div>
-        </div>
+        <label>Категория</label>
+        <AppDropdown
+          ref="categoryDropdown"
+          @select="handleCategorySelect"
+          v-model="formData.category_id"
+          :show-color="true"
+          :items="categories"
+          placeholder="Выберите категорию"
+          name-key="name" class="dropdown"
+        >
+        </AppDropdown>
 
-        <label for="record-tags">Теги</label>
+        <label>Теги</label>
         <div class="tags-container">
-          <select id="record-tags" v-model="formData.tags" multiple>
-            <option v-for="tag in tags" :key="tag.id" :value="tag.id">
-              {{ tag.name }}
-            </option>
-          </select>
-          <div class="selected-tags">
-            <div v-for="tag in formData.tags" :key="tag" class="tag-item">
-              <div class="color-box" :style="{ backgroundColor: getTagColor(tag) }"></div>
-              <span>{{ getTagName(tag) }}</span>
+          <div class="tags-list">
+            <div v-for="tag in tags" :key="tag.id" class="tag-option"
+              :class="{ 'selected': formData.tags.includes(tag.id) }" @click="toggleTag(tag.id)">
+              <div class="color-box" :style="{ backgroundColor: tag.color }"></div>
+              <span>{{ tag.name }}</span>
             </div>
           </div>
         </div>
@@ -65,7 +65,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import AppDropdown from './AppDropdown.vue';
 
 const props = defineProps({
   modelValue: Boolean,
@@ -78,9 +79,13 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'create', 'update']);
 
 const formData = ref(getEmptyRecord());
+const isCategoryOpen = ref(false);
+const categoryDropdown = ref(null);
+const unitDropdown = ref(null)
 
 function getEmptyRecord() {
   return {
+    id: '',
     record_date: new Date().toISOString().split('T')[0],
     name: '',
     price: 0,
@@ -94,19 +99,25 @@ function getEmptyRecord() {
 
 const isEditing = computed(() => !!props.recordToEdit);
 
-const selectedCategory = computed(() => {
-  if (!formData.value.category_id) return null;
-  return props.categories.find(cat => cat.id === formData.value.category_id);
-});
+const handleUnitSelect = (unit) => {
+  formData.value.unit_id = unit.id;
+  formData.value.unit_quantity = unit.default_value
+  unitDropdown.value.closeDropdown();
+};
 
-function getTagColor(tagId) {
-  const tag = props.tags.find(t => t.id === tagId);
-  return tag ? tag.color : '#808080';
+function handleCategorySelect(category) {
+  formData.value.category_id = category.id;
+  categoryDropdown.value.closeDropdown();
+  isCategoryOpen.value = false;
 }
 
-function getTagName(tagId) {
-  const tag = props.tags.find(t => t.id === tagId);
-  return tag ? tag.name : '';
+function toggleTag(tagId) {
+  const index = formData.value.tags.indexOf(tagId);
+  if (index === -1) {
+    formData.value.tags.push(tagId);
+  } else {
+    formData.value.tags.splice(index, 1);
+  }
 }
 
 function submitForm() {
@@ -117,13 +128,53 @@ function submitForm() {
   }
 }
 
-watch(() => props.recordToEdit, (newVal) => {
-  if (newVal) {
-    formData.value = { ...newVal };
-  } else {
-    formData.value = getEmptyRecord();
+const handleClickOutside = (event) => {
+  if (!props.modelValue) return;
+  
+  const categoryEl = categoryDropdown.value?.$el;
+  const unitEl = unitDropdown.value?.$el;
+  
+  if (
+    (categoryEl && categoryEl.contains(event.target)) ||
+    (unitEl && unitEl.contains(event.target))
+  ) {
+    return;
   }
-}, { immediate: true });
+  
+  categoryDropdown.value?.closeDropdown();
+  unitDropdown.value?.closeDropdown();
+};
+
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
+watch(
+  () => props.recordToEdit,
+  (newVal) => {
+    if (newVal) {
+      formData.value = {
+        id: newVal.id || '',
+        record_date: newVal.record_date,
+        name: newVal.name,
+        price: Number(newVal.price),
+        unit_quantity: Number(newVal.unit_quantity),
+        product_quantity: Number(newVal.product_quantity),
+        unit_id: newVal.unit?.id || '',
+        category_id: newVal.category?.id || '',
+        tags: Array.isArray(newVal.tags) ? newVal.tags.map(t => t.id) : []
+      }
+    } else {
+      formData.value = getEmptyRecord();
+    }
+  },
+  { immediate: true }
+);
 
 watch(() => props.modelValue, (visible) => {
   if (!visible && !props.recordToEdit) {
@@ -158,8 +209,9 @@ watch(() => props.modelValue, (visible) => {
   gap: 10px;
 }
 
-.modal-content input,
-.modal-content select {
+input,
+select,
+.dropdown input {
   width: 95%;
   padding: 8px;
   margin-bottom: 8px;
@@ -167,9 +219,17 @@ watch(() => props.modelValue, (visible) => {
   border: 1px solid #bb86fc;
   border-radius: 5px;
   color: #d9cfcf;
+  transition: border-color 0.3s ease;
+  font-size: 14px;
 }
 
-.modal-content label {
+input:focus,
+.dropdown input:focus {
+  border-color: #03dac6;
+  outline: none;
+}
+
+label {
   margin-top: 8px;
   margin-bottom: 2px;
   color: #bb86fc;
@@ -181,6 +241,7 @@ watch(() => props.modelValue, (visible) => {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .add_row_btn {
@@ -192,7 +253,6 @@ watch(() => props.modelValue, (visible) => {
   cursor: pointer;
   font-size: 16px;
   font-family: 'Roboto', monospace;
-  margin-top: 10px;
 }
 
 .color-box {
@@ -204,35 +264,48 @@ watch(() => props.modelValue, (visible) => {
   vertical-align: middle;
 }
 
-.custom-select {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.custom-select .color-box {
-  position: absolute;
-  right: 30px;
-  pointer-events: none;
-}
-
 .tags-container {
   margin-bottom: 10px;
 }
 
-.selected-tags {
-  margin-top: 5px;
+.tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 8px;
 }
 
-.tag-item {
-  background: #333;
-  padding: 3px 8px;
+.tag-option {
+  padding: 4px 8px;
+  border: 1px solid #444;
   border-radius: 12px;
+  cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.tag-option.selected {
+  border-color: #bb86fc;
+  background: #3a3a3a;
+}
+
+.dropdown {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.dropdown .dropdown-content {
+  width: 95%;
+  left: 2.5%;
+  background: #2b2b2b;
+  border-color: #bb86fc;
+}
+
+.dropdown .default-value {
+  color: #888;
+  margin-left: 8px;
   font-size: 0.9em;
 }
 </style>
