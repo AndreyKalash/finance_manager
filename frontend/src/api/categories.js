@@ -8,7 +8,7 @@ export const CategoriesAPI = {
         return api.post('/categories/', {name, color})  
     },
     async updateCategory(id, name, color) {
-        return api.patch(`/categories/${id}/`, { name, color })
+        return api.patch(`/categories/${id}`, { name, color })
     }, 
     async deleteCategory(id) {
         return api.delete(`/categories/${id}`)
