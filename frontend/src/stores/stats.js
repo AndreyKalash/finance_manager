@@ -7,9 +7,20 @@ export const useStatsStore = defineStore("stats", {
     categoriesMonthCount: [],
     loading: false,
     error: null,
+    currentChartMonth: null,
+    currentChartYear: null,
   }),
-
   actions: {
+    async fetchStats(month, year) {
+      this.setChartPeriod(month, year);
+      console.log(this.currentChartMonth, this.currentChartYear)
+      await this.fetchCategoriesMonthSum(month, year);
+      await this.fetchCategoriesMonthCount(month, year);
+    },
+    setChartPeriod(month, year) {
+      this.currentChartMonth = month;
+      this.currentChartYear = year;
+    },
     async fetchCategoriesMonthSum(month, year) {
       this.loading = true;
       this.error = null;

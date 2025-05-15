@@ -36,7 +36,7 @@
         <router-link to="/records" class="secondary" title="Перейти на страницу трат">
           <h2 class="title primary">Таблица трат</h2>
         </router-link>
-        <RecordsTable :items="recentRecords" :headers="headers" />
+        <RecordsTable :items="recentRecords" :headers="headers" :fetch-charts="true" />
       </div>
     </section>
   </main>
@@ -100,23 +100,18 @@ const isCurrentMonth = computed(() => {
   )
 })
 
-const fetchStats = async () => {
-  await statsStore.fetchCategoriesMonthSum(month.value, year.value)
-  await statsStore.fetchCategoriesMonthCount(month.value, year.value)
-}
-
 const prevMonth = async () => {
   const d = new Date(currentDate.value)
   d.setMonth(d.getMonth() - 1)
   currentDate.value = d
-  await fetchStats()
+  await statsStore.fetchStats(month.value, year.value)
 }
 
 const nextMonth = async () => {
   const d = new Date(currentDate.value)
   d.setMonth(d.getMonth() + 1)
   currentDate.value = d
-  await fetchStats()
+  await statsStore.fetchStats(month.value, year.value)
 }
 
 onMounted(async () => {
@@ -125,7 +120,7 @@ onMounted(async () => {
   await tagsStore.fetchTags()
   await unitsStore.fetchUnits()
   await recordsStore.fetchRecords()
-  await fetchStats()
+  await statsStore.fetchStats(month.value, year.value)
 })
 
 </script>
