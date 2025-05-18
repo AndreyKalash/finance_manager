@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.auth_config import fastapi_auth
 from src.database.core.db import get_async_session
-from src.database.database import delete_data, insert_data, select_data, update_data, upload_data
-from src.models import Record, User, Tag, RecordTag
+from src.database.database import delete_data, select_data, upload_data
+from src.models import Record, User, Tag
 
 from .schemas import RecordAddDTO, RecordDTO
 

@@ -3,7 +3,11 @@
     <section class="records_chart_items">
       <div class="records_chart container">
         <div class="chart_container">
-          <button class="nav_button left" @click="prevMonth" aria-label="Предыдущий месяц">
+          <button
+            class="nav_button left"
+            @click="prevMonth"
+            aria-label="Предыдущий месяц"
+          >
             <font-awesome-icon :icon="['fas', 'chevron-left']" />
           </button>
           <div class="center_content">
@@ -33,96 +37,117 @@
 
     <section class="records container">
       <div class="table_view">
-        <router-link to="/records" class="secondary" title="Перейти на страницу трат">
+        <router-link
+          to="/records"
+          class="secondary"
+          title="Перейти на страницу трат"
+        >
           <h2 class="title primary">Таблица трат</h2>
         </router-link>
-        <RecordsTable :items="recentRecords" :headers="headers" :fetch-charts="true" />
+        <RecordsTable
+          :items="recentRecords"
+          :headers="headers"
+          :fetch-charts="true"
+        />
       </div>
     </section>
   </main>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import PieChart from '@/components/layout/PieChart.vue'
-import RecordsTable from '@/components/RecordsTable.vue'
-import { useRecordsStore } from '@/stores/records'
-import { useStatsStore } from '@/stores/stats'
-import { useCategoriesStore } from '@/stores/categories'
-import { useAuthStore } from '@/stores/auth'
-import { useTagsStore } from '@/stores/tags'
-import { useUnitsStore } from '@/stores/units'
+import { ref, computed, onMounted } from "vue";
+import PieChart from "@/components/layout/PieChart.vue";
+import RecordsTable from "@/components/RecordsTable.vue";
+import { useRecordsStore } from "@/stores/records";
+import { useStatsStore } from "@/stores/stats";
+import { useCategoriesStore } from "@/stores/categories";
+import { useAuthStore } from "@/stores/auth";
+import { useTagsStore } from "@/stores/tags";
+import { useUnitsStore } from "@/stores/units";
 
-const currentDate = ref(new Date())
-const recordsStore = useRecordsStore()
-const statsStore = useStatsStore()
-const authStore = useAuthStore()
-const categoriesStore = useCategoriesStore()
-const tagsStore = useTagsStore()
-const unitsStore = useUnitsStore()
+const currentDate = ref(new Date());
+const recordsStore = useRecordsStore();
+const statsStore = useStatsStore();
+const authStore = useAuthStore();
+const categoriesStore = useCategoriesStore();
+const tagsStore = useTagsStore();
+const unitsStore = useUnitsStore();
 
 const headers = [
-  'Дата', 'Название', 'Цена товара', 'Единица измерения',
-  'Количество единицы измерения', 'Количество товара',
-  'Категория', 'Теги'
-]
+  "Дата",
+  "Название",
+  "Цена товара",
+  "Единица измерения",
+  "Количество единицы измерения",
+  "Количество товара",
+  "Категория",
+  "Теги",
+];
 
 const currentMonth = computed(() => {
-  return currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
-})
+  return currentDate.value.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+});
 
-const month = computed(() => currentDate.value.getMonth() + 1)
-const year = computed(() => currentDate.value.getFullYear())
+const month = computed(() => currentDate.value.getMonth() + 1);
+const year = computed(() => currentDate.value.getFullYear());
 
-const recentRecords = computed(() => recordsStore.records.slice(0, 10))
+const recentRecords = computed(() => recordsStore.records.slice(0, 10));
 
 const sumChartData = computed(() => ({
-  labels: statsStore.categoriesMonthSum.map(item => item.category),
-  datasets: [{
-    data: statsStore.categoriesMonthSum.map(item => item.sum),
-    backgroundColor: statsStore.categoriesMonthSum.map(item => item.color)
-  }]
-}))
+  labels: statsStore.categoriesMonthSum.map((item) => item.category),
+  datasets: [
+    {
+      data: statsStore.categoriesMonthSum.map((item) => item.sum),
+      backgroundColor: statsStore.categoriesMonthSum.map((item) => item.color),
+    },
+  ],
+}));
 
 const countChartData = computed(() => ({
-  labels: statsStore.categoriesMonthCount.map(item => item.category),
-  datasets: [{
-    data: statsStore.categoriesMonthCount.map(item => item.count),
-    backgroundColor: statsStore.categoriesMonthCount.map(item => item.color)
-  }]
-}))
+  labels: statsStore.categoriesMonthCount.map((item) => item.category),
+  datasets: [
+    {
+      data: statsStore.categoriesMonthCount.map((item) => item.count),
+      backgroundColor: statsStore.categoriesMonthCount.map(
+        (item) => item.color
+      ),
+    },
+  ],
+}));
 
 const isCurrentMonth = computed(() => {
-  const now = new Date()
+  const now = new Date();
   return (
     currentDate.value.getMonth() === now.getMonth() &&
     currentDate.value.getFullYear() === now.getFullYear()
-  )
-})
+  );
+});
 
 const prevMonth = async () => {
-  const d = new Date(currentDate.value)
-  d.setMonth(d.getMonth() - 1)
-  currentDate.value = d
-  await statsStore.fetchStats(month.value, year.value)
-}
+  const d = new Date(currentDate.value);
+  d.setMonth(d.getMonth() - 1);
+  currentDate.value = d;
+  await statsStore.fetchStats(month.value, year.value);
+};
 
 const nextMonth = async () => {
-  const d = new Date(currentDate.value)
-  d.setMonth(d.getMonth() + 1)
-  currentDate.value = d
-  await statsStore.fetchStats(month.value, year.value)
-}
+  const d = new Date(currentDate.value);
+  d.setMonth(d.getMonth() + 1);
+  currentDate.value = d;
+  await statsStore.fetchStats(month.value, year.value);
+};
 
 onMounted(async () => {
-  await authStore.fetchUser()
-  await categoriesStore.fetchCategories()
-  await tagsStore.fetchTags()
-  await unitsStore.fetchUnits()
-  await recordsStore.fetchRecords()
-  await statsStore.fetchStats(month.value, year.value)
-})
-
+  await authStore.fetchUser();
+  await categoriesStore.fetchCategories();
+  await tagsStore.fetchTags();
+  await unitsStore.fetchUnits();
+  await recordsStore.fetchRecords();
+  await statsStore.fetchStats(month.value, year.value);
+});
 </script>
 
 <style scoped>

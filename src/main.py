@@ -14,7 +14,7 @@ origins = [
     "http://localhost:8080",
     "http://localhost",
     "http://127.0.0.1:8080",
-    "http://192.168.0.11:8080",  # Без слеша в конце
+    "http://192.168.0.11:8080",
 ]
 
 app.add_middleware(
@@ -25,15 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
-
 app.include_router(ar.auth_router)
 app.include_router(ar.user_router)
 app.include_router(ar.units_router)
 app.include_router(ar.tags_router)
 app.include_router(ar.categories_router)
 app.include_router(ar.records_router)
-app.include_router(ar.pages_router)
 app.include_router(ar.stats_router)
 
 

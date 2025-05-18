@@ -26,8 +26,6 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
-        return token
-
 
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)

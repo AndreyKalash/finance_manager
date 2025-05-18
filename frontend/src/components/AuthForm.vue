@@ -2,20 +2,47 @@
   <section class="auth_section">
     <div class="container">
       <div class="auth_content">
-        <p class="title primary">{{ isLoginMode ? 'Вход' : 'Регистрация' }}</p>
+        <p class="title primary">{{ isLoginMode ? "Вход" : "Регистрация" }}</p>
         <form @submit.prevent="handleSubmit">
-          <input v-model="formData.email" type="email" placeholder="Электронная почта" required>
-          <input v-if="!isLoginMode" v-model="formData.username" type="text" placeholder="Логин" required>
-          <input v-model="formData.password" type="password" placeholder="Пароль" required>
-          <input v-if="!isLoginMode" v-model="formData.confirmPassword" type="password" placeholder="Повторите пароль"
-            required>
-          <button type="submit">{{ isLoginMode ? 'Войти' : 'Зарегистрироваться' }}</button>
+          <input
+            v-model="formData.email"
+            type="email"
+            placeholder="Электронная почта"
+            required
+          />
+          <input
+            v-if="!isLoginMode"
+            v-model="formData.username"
+            type="text"
+            placeholder="Логин"
+            required
+          />
+          <input
+            v-model="formData.password"
+            type="password"
+            placeholder="Пароль"
+            required
+          />
+          <input
+            v-if="!isLoginMode"
+            v-model="formData.confirmPassword"
+            type="password"
+            placeholder="Повторите пароль"
+            required
+          />
+          <button type="submit">
+            {{ isLoginMode ? "Войти" : "Зарегистрироваться" }}
+          </button>
         </form>
         <div class="form_switch">
-          <p>{{ isLoginMode ? 'Нет аккаунта?' : 'Уже есть аккаунт?' }}</p>
-          <router-link :to="isLoginMode ? '/register' : '/login'" class="switch-link" active-class="active"
-            exact-active-class="exact-active">
-            {{ isLoginMode ? 'Зарегистрироваться' : 'Войти' }}
+          <p>{{ isLoginMode ? "Нет аккаунта?" : "Уже есть аккаунт?" }}</p>
+          <router-link
+            :to="isLoginMode ? '/register' : '/login'"
+            class="switch-link"
+            active-class="active"
+            exact-active-class="exact-active"
+          >
+            {{ isLoginMode ? "Зарегистрироваться" : "Войти" }}
           </router-link>
         </div>
       </div>
@@ -24,68 +51,65 @@
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-
-const router = useRouter()
-const route = useRoute()
-const isLoginMode = computed(() => route.path === '/login')
-const errorMessage = ref('')
-const authStore = useAuthStore()
+const router = useRouter();
+const route = useRoute();
+const isLoginMode = computed(() => route.path === "/login");
+const errorMessage = ref("");
+const authStore = useAuthStore();
 
 const formData = ref({
-  email: '',
-  username: '',
-  password: '',
-  confirmPassword: ''
-})
+  email: "",
+  username: "",
+  password: "",
+  confirmPassword: "",
+});
 
 const handleSubmit = async () => {
   if (isLoginMode.value) {
-    await handleLogin()
+    await handleLogin();
   } else {
-    await handleRegister()
+    await handleRegister();
   }
-}
+};
 
 const handleLogin = async () => {
   try {
-    errorMessage.value = ''
+    errorMessage.value = "";
 
     await authStore.login({
       username: formData.value.email,
-      password: formData.value.password
+      password: formData.value.password,
     });
 
-    const redirectPath = authStore.redirectPath || '/';
+    const redirectPath = authStore.redirectPath || "/";
     router.push(redirectPath);
-
   } catch (error) {
-    errorMessage.value = 'Неверный email или пароль'
-    console.error('Login failed:', error)
+    errorMessage.value = "Неверный email или пароль";
+    console.error("Login failed:", error);
   }
-}
+};
 
 const handleRegister = async () => {
   if (formData.value.password !== formData.value.confirmPassword) {
-    errorMessage.value = 'Пароли не совпадают';
+    errorMessage.value = "Пароли не совпадают";
     return;
   }
   try {
-    errorMessage.value = '';
-    
+    errorMessage.value = "";
+
     await authStore.register({
       email: formData.value.email,
       username: formData.value.username,
-      password: formData.value.password
+      password: formData.value.password,
     });
-    await handleLogin()
-    
+    await handleLogin();
   } catch (error) {
     errorMessage.value = error.toString();
-    console.error('Registration failed:', error);
+    console.error("Registration failed:", error);
   }
 };
 </script>

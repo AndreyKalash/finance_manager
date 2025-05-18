@@ -22,16 +22,16 @@
                   class="color-badge color-picker-inline"
                   :style="{ backgroundColor: editColor }"
                   inline
-                  />
-                  <input
+                />
+                <input
                   @click.stop
                   v-model="editName"
                   class="edit-input"
                   :placeholder="placeholder"
                   @keyup.enter="saveEdit(item)"
                   autofocus
-                  />
-                  <input
+                />
+                <input
                   v-if="showDefaultValue"
                   @click.stop
                   v-model.number="editDefaultValue"
@@ -216,14 +216,13 @@ const handleClickOutside = (event) => {
   if (
     (dropdownEl && dropdownEl.contains(event.target)) ||
     (editEl && editEl.contains(event.target)) ||
-    event.target.closest('.vc-colorpicker')
+    event.target.closest(".vc-colorpicker")
   ) {
     return;
   }
   dropdownRef.value?.closeDropdown();
-  cancelEdit()
+  cancelEdit();
 };
-
 
 onMounted(() => {
   filterOptions();
@@ -462,5 +461,4 @@ input {
   box-shadow: none !important;
   padding: 0 !important;
 }
-
 </style>

@@ -16,7 +16,7 @@ export default {
 }
 </script>
 
-<style >
+<style>
 #app {
   min-height: 100vh;
   display: flex;

@@ -13,7 +13,6 @@ export const useStatsStore = defineStore("stats", {
   actions: {
     async fetchStats(month, year) {
       this.setChartPeriod(month, year);
-      console.log(this.currentChartMonth, this.currentChartYear)
       await this.fetchCategoriesMonthSum(month, year);
       await this.fetchCategoriesMonthCount(month, year);
     },

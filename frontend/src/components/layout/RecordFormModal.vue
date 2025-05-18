@@ -1,21 +1,46 @@
 <template>
   <div class="modal" v-if="modelValue">
     <div class="modal-content">
-      <h3>{{ isEditing ? 'Редактировать' : 'Добавить' }} запись</h3>
+      <h3>{{ isEditing ? "Редактировать" : "Добавить" }} запись</h3>
       <form @submit.prevent="submitForm">
         <label for="record-date">Дата</label>
-        <input id="record-date" v-model="formData.record_date" type="date" required />
+        <input
+          id="record-date"
+          v-model="formData.record_date"
+          type="date"
+          required
+        />
 
         <label for="record-name">Название</label>
-        <input id="record-name" v-model="formData.name" type="text" placeholder="Название" required />
+        <input
+          id="record-name"
+          v-model="formData.name"
+          type="text"
+          placeholder="Название"
+          required
+        />
 
         <label for="record-price">Цена</label>
-        <input id="record-price" v-model.number="formData.price" type="number" step="0.01" placeholder="Цена"
-          required />
+        <input
+          id="record-price"
+          v-model.number="formData.price"
+          type="number"
+          step="0.01"
+          placeholder="Цена"
+          required
+        />
 
         <label for="record-unit">Единица измерения</label>
-        <AppDropdown ref="unitDropdown" @select="handleUnitSelect" v-model="formData.unit_id" :show-color="false"
-          :items="units" placeholder="Выберите единицу" name-key="name" class="dropdown">
+        <AppDropdown
+          ref="unitDropdown"
+          @select="handleUnitSelect"
+          v-model="formData.unit_id"
+          :show-color="false"
+          :items="units"
+          placeholder="Выберите единицу"
+          name-key="name"
+          class="dropdown"
+        >
           <template #item="{ item }">
             <div>
               <span>{{ item.name }}</span>
@@ -25,12 +50,20 @@
         </AppDropdown>
 
         <label for="record-unit-quantity">Количество единиц измерения</label>
-        <input id="record-unit-quantity" v-model.number="formData.unit_quantity" type="number"
-          placeholder="Кол-во ед." />
+        <input
+          id="record-unit-quantity"
+          v-model.number="formData.unit_quantity"
+          type="number"
+          placeholder="Кол-во ед."
+        />
 
         <label for="record-product-quantity">Количество товара</label>
-        <input id="record-product-quantity" v-model.number="formData.product_quantity" type="number"
-          placeholder="Кол-во товара" />
+        <input
+          id="record-product-quantity"
+          v-model.number="formData.product_quantity"
+          type="number"
+          placeholder="Кол-во товара"
+        />
 
         <label>Категория</label>
         <AppDropdown
@@ -40,24 +73,41 @@
           :show-color="true"
           :items="categories"
           placeholder="Выберите категорию"
-          name-key="name" class="dropdown"
+          name-key="name"
+          class="dropdown"
         >
         </AppDropdown>
 
         <label>Теги</label>
         <div class="tags-container">
           <div class="tags-list">
-            <div v-for="tag in tags" :key="tag.id" class="tag-option"
-              :class="{ 'selected': formData.tags.includes(tag.id) }" @click="toggleTag(tag.id)">
-              <div class="color-box" :style="{ backgroundColor: tag.color }"></div>
+            <div
+              v-for="tag in tags"
+              :key="tag.id"
+              class="tag-option"
+              :class="{ selected: formData.tags.includes(tag.id) }"
+              @click="toggleTag(tag.id)"
+            >
+              <div
+                class="color-box"
+                :style="{ backgroundColor: tag.color }"
+              ></div>
               <span>{{ tag.name }}</span>
             </div>
           </div>
         </div>
 
         <div class="modal-actions">
-          <button type="submit" class="add_row_btn">{{ isEditing ? 'Сохранить' : 'Добавить' }}</button>
-          <button type="button" class="add_row_btn" @click="$emit('update:modelValue', false)">Отмена</button>
+          <button type="submit" class="add_row_btn">
+            {{ isEditing ? "Сохранить" : "Добавить" }}
+          </button>
+          <button
+            type="button"
+            class="add_row_btn"
+            @click="$emit('update:modelValue', false)"
+          >
+            Отмена
+          </button>
         </div>
       </form>
     </div>
@@ -65,43 +115,43 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import AppDropdown from './AppDropdown.vue';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import AppDropdown from "./AppDropdown.vue";
 
 const props = defineProps({
   modelValue: Boolean,
   recordToEdit: Object,
   categories: Array,
   tags: Array,
-  units: Array
+  units: Array,
 });
 
-const emit = defineEmits(['update:modelValue', 'create', 'update']);
+const emit = defineEmits(["update:modelValue", "create", "update"]);
 
 const formData = ref(getEmptyRecord());
 const isCategoryOpen = ref(false);
 const categoryDropdown = ref(null);
-const unitDropdown = ref(null)
+const unitDropdown = ref(null);
 
 function getEmptyRecord() {
   return {
-    id: '',
-    record_date: new Date().toISOString().split('T')[0],
-    name: '',
+    id: "",
+    record_date: new Date().toISOString().split("T")[0],
+    name: "",
     price: 0,
     unit_quantity: 1,
     product_quantity: 1,
-    unit_id: '',
-    category_id: '',
-    tags: []
-  }
+    unit_id: "",
+    category_id: "",
+    tags: [],
+  };
 }
 
 const isEditing = computed(() => !!props.recordToEdit);
 
 const handleUnitSelect = (unit) => {
   formData.value.unit_id = unit.id;
-  formData.value.unit_quantity = unit.default_value
+  formData.value.unit_quantity = unit.default_value;
   unitDropdown.value.closeDropdown();
 };
 
@@ -122,29 +172,28 @@ function toggleTag(tagId) {
 
 function submitForm() {
   if (isEditing.value) {
-    emit('update', { ...formData.value });
+    emit("update", { ...formData.value });
   } else {
-    emit('create', { ...formData.value });
+    emit("create", { ...formData.value });
   }
 }
 
 const handleClickOutside = (event) => {
   if (!props.modelValue) return;
-  
+
   const categoryEl = categoryDropdown.value?.$el;
   const unitEl = unitDropdown.value?.$el;
-  
+
   if (
     (categoryEl && categoryEl.contains(event.target)) ||
     (unitEl && unitEl.contains(event.target))
   ) {
     return;
   }
-  
+
   categoryDropdown.value?.closeDropdown();
   unitDropdown.value?.closeDropdown();
 };
-
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
@@ -159,16 +208,16 @@ watch(
   (newVal) => {
     if (newVal) {
       formData.value = {
-        id: newVal.id || '',
+        id: newVal.id || "",
         record_date: newVal.record_date,
         name: newVal.name,
         price: Number(newVal.price),
         unit_quantity: Number(newVal.unit_quantity),
         product_quantity: Number(newVal.product_quantity),
-        unit_id: newVal.unit?.id || '',
-        category_id: newVal.category?.id || '',
-        tags: Array.isArray(newVal.tags) ? newVal.tags.map(t => t.id) : []
-      }
+        unit_id: newVal.unit?.id || "",
+        category_id: newVal.category?.id || "",
+        tags: Array.isArray(newVal.tags) ? newVal.tags.map((t) => t.id) : [],
+      };
     } else {
       formData.value = getEmptyRecord();
     }
@@ -176,11 +225,14 @@ watch(
   { immediate: true }
 );
 
-watch(() => props.modelValue, (visible) => {
-  if (!visible && !props.recordToEdit) {
-    formData.value = getEmptyRecord();
+watch(
+  () => props.modelValue,
+  (visible) => {
+    if (!visible && !props.recordToEdit) {
+      formData.value = getEmptyRecord();
+    }
   }
-});
+);
 </script>
 
 <style scoped>
@@ -252,7 +304,7 @@ label {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  font-family: 'Roboto', monospace;
+  font-family: "Roboto", monospace;
 }
 
 .color-box {

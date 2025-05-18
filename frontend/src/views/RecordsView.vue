@@ -3,17 +3,17 @@
     <div class="table_view">
       <div class="search">
         <i class="fa-solid fa-magnifying-glass secondary"></i>
-        <input 
-          type="search" 
-          v-model="searchQuery" 
+        <input
+          type="search"
+          v-model="searchQuery"
           placeholder="Поиск по таблице"
           id="records_search"
-        >
+        />
       </div>
 
-      <RecordsTable 
+      <RecordsTable
         ref="recordsTableRef"
-        :items="filteredRecords" 
+        :items="filteredRecords"
         :headers="headers"
       />
 
@@ -25,38 +25,47 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useCategoriesStore } from '@/stores/categories'
-import { useTagsStore } from '@/stores/tags'
-import { useUnitsStore } from '@/stores/units'
-import { useRecordsStore } from '@/stores/records'
-import RecordsTable from '@/components/RecordsTable.vue'
+import { ref, computed, onMounted } from "vue";
+import { useCategoriesStore } from "@/stores/categories";
+import { useTagsStore } from "@/stores/tags";
+import { useUnitsStore } from "@/stores/units";
+import { useRecordsStore } from "@/stores/records";
+import RecordsTable from "@/components/RecordsTable.vue";
 
 const headers = [
-  'Дата', 'Название', 'Цена товара', 'Единица измерения',
-  'Количество EМ', 'Количество товара',
-  'Категория', 'Теги'
-]
+  "Дата",
+  "Название",
+  "Цена товара",
+  "Единица измерения",
+  "Количество EМ",
+  "Количество товара",
+  "Категория",
+  "Теги",
+];
 
-const categoryStore = useCategoriesStore()
-const tagStore = useTagsStore()
-const unitStore = useUnitsStore()
-const recordsStore = useRecordsStore()
-const recordsTableRef = ref(null)
+const categoryStore = useCategoriesStore();
+const tagStore = useTagsStore();
+const unitStore = useUnitsStore();
+const recordsStore = useRecordsStore();
+const recordsTableRef = ref(null);
 
-const searchQuery = ref('')
+const searchQuery = ref("");
 
 const filteredRecords = computed(() => {
-  if (!searchQuery.value) return recordsStore.records
-  return recordsStore.records.filter(record =>
-    (record.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    (record.category?.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
-
+  if (!searchQuery.value) return recordsStore.records;
+  return recordsStore.records.filter(
+    (record) =>
+      (record.name ?? "")
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase()) ||
+      (record.category?.name ?? "")
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase())
+  );
+});
 
 function showAddForm() {
-  recordsTableRef.value?.showFormModal()
+  recordsTableRef.value?.showFormModal();
 }
 
 onMounted(async () => {
@@ -64,9 +73,9 @@ onMounted(async () => {
     categoryStore.fetchCategories(),
     tagStore.fetchTags(),
     unitStore.fetchUnits(),
-    recordsStore.fetchRecords()
-  ])
-})
+    recordsStore.fetchRecords(),
+  ]);
+});
 </script>
 
 <style scoped>
@@ -115,7 +124,7 @@ onMounted(async () => {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  font-family: 'Roboto', monospace;
+  font-family: "Roboto", monospace;
   margin-top: 10px;
 }
 </style>

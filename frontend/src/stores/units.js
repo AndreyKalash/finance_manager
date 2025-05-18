@@ -17,24 +17,22 @@ export const useUnitsStore = defineStore("units", {
         this.units = response.data?.items || response.data || [];
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки тегов";
-        console.error("API Error:", error.response?.data);
       } finally {
         this.loading = false;
       }
     },
 
     async createUnit(name, defaultValue) {
-      
       this.error = null;
       try {
         const { data } = await UnitsAPI.createUnit(name, defaultValue);
-        this.units.push(data)
+        this.units.push(data);
       } catch (error) {
         this.error =
-        error.response?.data?.detail || "Ошибка создания единицы измерения";
+          error.response?.data?.detail || "Ошибка создания единицы измерения";
       }
     },
-    
+
     async updateUnit(id, name, default_value) {
       this.error = null;
       try {
@@ -59,5 +57,5 @@ export const useUnitsStore = defineStore("units", {
           error.response?.data?.detail || "Ошибка удаления единицы измерения";
       }
     },
-}
+  },
 });

@@ -24,9 +24,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -38,11 +38,11 @@ const toggleDropdown = () => {
 
 const handleLogout = async () => {
   await authStore.logout();
-  router.push('/login');
+  router.push("/login");
 };
 
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.logout-dropdown')) {
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".logout-dropdown")) {
     showDropdown.value = false;
   }
 });

@@ -9,7 +9,7 @@ export const useRecordsStore = defineStore("records", {
   }),
 
   actions: {
-    async fetchRecords(limit=50, skip=0) {
+    async fetchRecords(limit = 50, skip = 0) {
       this.loading = true;
       this.error = null;
       try {

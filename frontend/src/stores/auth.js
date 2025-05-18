@@ -1,33 +1,33 @@
-import { defineStore } from 'pinia'
-import { AuthAPI } from '@/api/users'
+import { defineStore } from "pinia";
+import { AuthAPI } from "@/api/users";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
-    token: localStorage.getItem('token') || null
+    token: localStorage.getItem("token") || null,
   }),
   actions: {
     async login({ username, password }) {
-      const params = new URLSearchParams()
-      params.append('username', username)
-      params.append('password', password)
-      
+      const params = new URLSearchParams();
+      params.append("username", username);
+      params.append("password", password);
+
       try {
-        const response = await AuthAPI.login(params)
-        this.token = response.data.access_token
-        localStorage.setItem('token', this.token)
-        await this.fetchUser()
-        return response
+        const response = await AuthAPI.login(params);
+        this.token = response.data.access_token;
+        localStorage.setItem("token", this.token);
+        await this.fetchUser();
+        return response;
       } catch (error) {
-        throw error.response?.data?.detail || 'Ошибка входа'
+        throw error.response?.data?.detail || "Ошибка входа";
       }
     },
     async initAuth() {
       if (this.token && !this.user) {
         try {
-          await this.fetchUser()
+          await this.fetchUser();
         } catch (error) {
-          this.logout()
+          this.logout();
         }
       }
     },
@@ -36,29 +36,28 @@ export const useAuthStore = defineStore('auth', {
         const response = await AuthAPI.register(userData);
         if (response.data.access_token) {
           this.token = response.data.access_token;
-          localStorage.setItem('token', this.token);
+          localStorage.setItem("token", this.token);
         }
-        
+
         return response;
       } catch (error) {
-        throw error.response?.data?.detail || 'Ошибка регистрации';
+        throw error.response?.data?.detail || "Ошибка регистрации";
       }
     },
     async fetchUser() {
-      const response = await AuthAPI.getMe()
-      this.user = response.data
+      const response = await AuthAPI.getMe();
+      this.user = response.data;
     },
     logout() {
-      this.user = null
-      this.token = null
-      localStorage.removeItem('token')
+      this.user = null;
+      this.token = null;
+      localStorage.removeItem("token");
     },
     async requestToken(email) {
       return await AuthAPI.requestVerifyToken(email);
     },
     async verifyToken(token) {
-      return await AuthAPI.verifyToken(token)
-    }
-  }
-})
-
+      return await AuthAPI.verifyToken(token);
+    },
+  },
+});

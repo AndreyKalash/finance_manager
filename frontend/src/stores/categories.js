@@ -34,7 +34,7 @@ export const useCategoriesStore = defineStore("categories", {
       }
     },
 
-    async updateCategory({id, name, color}) {
+    async updateCategory({ id, name, color }) {
       this.error = null;
       try {
         const { data } = await CategoriesAPI.updateCategory(id, name, color);

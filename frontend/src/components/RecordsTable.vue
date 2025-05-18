@@ -7,7 +7,7 @@
         v-model="searchQuery"
         placeholder="Поиск по таблице"
         id="records_search"
-      >
+      />
     </div>
 
     <div
@@ -43,7 +43,7 @@
               <div class="tags-cell">
                 <template v-if="item.tags.length <= 3">
                   <span
-                    v-for="(tag) in item.tags"
+                    v-for="tag in item.tags"
                     :key="tag.id"
                     class="tag-badge"
                   >
@@ -67,7 +67,11 @@
                     {{ tag.name }}
                     <span v-if="idx < 1" class="tag-separator">,</span>
                   </span>
-                  <span class="tag-badge more-badge" @mouseenter="showTooltip = index" @mouseleave="showTooltip = null">
+                  <span
+                    class="tag-badge more-badge"
+                    @mouseenter="showTooltip = index"
+                    @mouseleave="showTooltip = null"
+                  >
                     +{{ item.tags.length - 2 }}
                     <span v-if="showTooltip === index" class="tag-tooltip">
                       <span
@@ -108,19 +112,19 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import RecordFormModal from './layout/RecordFormModal.vue';
-import { useCategoriesStore } from '@/stores/categories';
-import { useTagsStore } from '@/stores/tags';
-import { useUnitsStore } from '@/stores/units';
-import { useRecordsStore } from '@/stores/records';
-import { useStatsStore } from '@/stores/stats';
+import { computed, ref } from "vue";
+import RecordFormModal from "./layout/RecordFormModal.vue";
+import { useCategoriesStore } from "@/stores/categories";
+import { useTagsStore } from "@/stores/tags";
+import { useUnitsStore } from "@/stores/units";
+import { useRecordsStore } from "@/stores/records";
+import { useStatsStore } from "@/stores/stats";
 
 const props = defineProps({
-  items: { type: Array, default: () => []},
-  showSearch: { type: Boolean, default: false},
-  headers: { type: Array, default: () => ['Дата', 'Название', 'Сумма']},
-  fetchCharts: {type: Boolean, default: false}
+  items: { type: Array, default: () => [] },
+  showSearch: { type: Boolean, default: false },
+  headers: { type: Array, default: () => ["Дата", "Название", "Сумма"] },
+  fetchCharts: { type: Boolean, default: false },
 });
 
 const categoryStore = useCategoriesStore();
@@ -129,7 +133,7 @@ const unitStore = useUnitsStore();
 const recordsStore = useRecordsStore();
 const statsStore = useStatsStore();
 
-const searchQuery = ref('');
+const searchQuery = ref("");
 const tableHover = ref(false);
 const formModalVisible = ref(false);
 const editingRecord = ref(null);
@@ -141,8 +145,8 @@ const units = computed(() => unitStore.units);
 
 const filteredItems = computed(() => {
   if (!searchQuery.value) return props.items;
-  return props.items.filter(item =>
-    (item.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
+  return props.items.filter((item) =>
+    (item.name ?? "").toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
@@ -177,7 +181,7 @@ async function updateRecord(record) {
 }
 
 async function deleteRecord(record) {
-  if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+  if (confirm("Вы уверены, что хотите удалить эту запись?")) {
     await recordsStore.deleteRecord(record.id);
     if (props.fetchCharts) {
       await fetchCharts(record);
@@ -188,15 +192,17 @@ async function deleteRecord(record) {
 async function fetchCharts(record) {
   const record_date = new Date(record.record_date);
   if (
-    (record_date.getMonth() + 1 == statsStore.currentChartMonth) &&
-    (record_date.getFullYear() == statsStore.currentChartYear)
+    record_date.getMonth() + 1 == statsStore.currentChartMonth &&
+    record_date.getFullYear() == statsStore.currentChartYear
   ) {
-    
-    await statsStore.fetchStats(record_date.getMonth() + 1, record_date.getFullYear());
+    await statsStore.fetchStats(
+      record_date.getMonth() + 1,
+      record_date.getFullYear()
+    );
   }
 }
 
-defineExpose({ showFormModal })
+defineExpose({ showFormModal });
 </script>
 
 <style scoped>
