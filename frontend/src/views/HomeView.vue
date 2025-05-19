@@ -12,7 +12,7 @@
           </button>
           <div class="center_content">
             <h2 class="title primary">Траты за {{ currentMonth }}</h2>
-            <PieChart :chartData="sumChartData" />
+            <PieChart :chartData="sumChartData" :unit-symbol="'₽'" />
           </div>
         </div>
       </div>
@@ -21,7 +21,7 @@
         <div class="chart_container">
           <div class="center_content">
             <h2 class="title primary">Количество трат за {{ currentMonth }}</h2>
-            <PieChart :chartData="countChartData" />
+            <PieChart :chartData="countChartData" :unit-symbol="'шт.'" />
           </div>
           <button
             class="nav_button right"
