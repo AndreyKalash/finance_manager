@@ -73,7 +73,7 @@
             </td>
             <td class="modify">
               <button class="mbtn" @click="editRecord(item)">✎</button>
-              <button class="mbtn" @click="deleteRecord(item)">🗑</button>
+              <button class="mbtn" @click="deleteRecord(currentType, item)">🗑</button>
             </td>
           </tr>
         </tbody>
@@ -159,7 +159,7 @@ watch(
 
 function changeType(type) {
   currentType.value = type;
-  emit("update:modelValue", type);
+  emit("update:modelValue", currentType.value);
 }
 
 const filteredItems = computed(() => {
@@ -192,30 +192,33 @@ async function createRecord(type, record) {
 }
 
 async function updateRecord(type, record) {
+  console.log(type, record);
+  
   await recordsStore.updateRecord(type, record);
   formModalVisible.value = false;
   editingRecord.value = null;
   if (props.fetchCharts) {
-    await fetchCharts(record);
+    await fetchCharts(type, record);
   }
 }
 
-async function deleteRecord(record) {
-  if (confirm("Вы уверены, что хотите удалить эту запись?")) {
-    await recordsStore.deleteRecord(record.id);
+async function deleteRecord(type, record) {
+  if (confirm("Вы уверены, что хотите удалить эту запись?" + type + record)) {
+    await recordsStore.deleteRecord(type, record.id);
     if (props.fetchCharts) {
-      await fetchCharts(record);
+      await fetchCharts(type, record);
     }
   }
 }
 
-async function fetchCharts(record) {
+async function fetchCharts(type, record) {
   const record_date = new Date(record.record_date);
   if (
     record_date.getMonth() + 1 == statsStore.currentChartMonth &&
     record_date.getFullYear() == statsStore.currentChartYear
   ) {
     await statsStore.fetchStats(
+      type,
       record_date.getMonth() + 1,
       record_date.getFullYear()
     );

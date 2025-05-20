@@ -1,14 +1,14 @@
 import api from "@/api";
 
 export const StatsAPI = {
-  async getCategoriesMonthSum(month, year) {
-    return api.get("/stats/categories-month-sum", {
+  async getCategoriesMonthSum(type, month, year) {
+    return api.get(`/stats/${type}/categories-month-sum`, {
       params: { month, year },
     });
   },
 
-  async getCategoriesMonthCount(month, year) {
-    return api.get("/stats/categories-month-count", {
+  async getCategoriesMonthCount(type, month, year) {
+    return api.get(`/stats/${type}/categories-month-count`, {
       params: { month, year },
     });
   },

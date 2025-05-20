@@ -45,6 +45,6 @@ class ExpenseRecordAddDTO(ExpenseRecordBaseDTO):
 class ExpenseRecordDTO(ExpenseRecordBaseDTO):
     id: UUID
     
-    unit: UnitDTO
+    unit: UnitDTO | None
     category: CategoryDTO
     tags: list[TagDTO]

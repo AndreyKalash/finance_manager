@@ -74,14 +74,13 @@ class RecordRouter(BaseRouter):
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user())
     ):
-        # try:
+        try:
             data = self.create_schema.model_validate(data)
             db_item = await self.create_record(session, data, current_user)
-            print(db_item)
             return db_item
-        # except Exception as e:
-        #     await session.rollback()
-        #     raise HTTPException(400, detail=str(e))
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(400, detail=str(e))
         
 records_router = APIRouter(
     prefix="/records",

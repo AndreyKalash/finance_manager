@@ -11,20 +11,20 @@ export const useStatsStore = defineStore("stats", {
     currentChartYear: null,
   }),
   actions: {
-    async fetchStats(month, year) {
+    async fetchStats(type, month, year) {
       this.setChartPeriod(month, year);
-      await this.fetchCategoriesMonthSum(month, year);
-      await this.fetchCategoriesMonthCount(month, year);
+      await this.fetchCategoriesMonthSum(type, month, year);
+      await this.fetchCategoriesMonthCount(type, month, year);
     },
     setChartPeriod(month, year) {
       this.currentChartMonth = month;
       this.currentChartYear = year;
     },
-    async fetchCategoriesMonthSum(month, year) {
+    async fetchCategoriesMonthSum(type, month, year) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await StatsAPI.getCategoriesMonthSum(month, year);
+        const response = await StatsAPI.getCategoriesMonthSum(type, month, year);
         this.categoriesMonthSum = response.data;
       } catch (error) {
         this.error =
@@ -34,11 +34,11 @@ export const useStatsStore = defineStore("stats", {
       }
     },
 
-    async fetchCategoriesMonthCount(month, year) {
+    async fetchCategoriesMonthCount(type, month, year) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await StatsAPI.getCategoriesMonthCount(month, year);
+        const response = await StatsAPI.getCategoriesMonthCount(type, month, year);
         this.categoriesMonthCount = response.data;
       } catch (error) {
         this.error =

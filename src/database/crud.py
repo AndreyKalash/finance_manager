@@ -17,13 +17,14 @@ async def select_data(
     load_options = [selectinload(rel) for rel in selectload]
     query = (
         select(model)
-        .options(*load_options)
+        .where(*filters)
         .limit(limit)
         .offset(skip)
-        .order_by(model.created_at)
-        .where(*filters)
+        .options(*load_options)
     )
-    
+    if hasattr(model, 'created_at'):
+        query = query.order_by(model.created_at)
+        
     result = await session.execute(query)
     return result.scalars().all()
 

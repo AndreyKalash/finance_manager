@@ -11,7 +11,7 @@
             <font-awesome-icon :icon="['fas', 'chevron-left']" />
           </button>
           <div class="center_content">
-            <h2 class="title primary">Траты за {{ currentMonth }}</h2>
+            <h2 class="title primary">{{ currentType == RTYPES.expense ? 'Траты' : 'Доходы' }} за {{ currentMonth }}</h2>
             <PieChart :chartData="sumChartData" :unit-symbol="'₽'" />
           </div>
         </div>
@@ -20,7 +20,7 @@
       <div class="records_chart container">
         <div class="chart_container">
           <div class="center_content">
-            <h2 class="title primary">Количество трат за {{ currentMonth }}</h2>
+            <h2 class="title primary">Количество {{ currentType == RTYPES.expense ? 'трат' : 'доходов'  }} за {{ currentMonth }}</h2>
             <PieChart :chartData="countChartData" :unit-symbol="'шт.'" />
           </div>
           <button
@@ -93,14 +93,17 @@ const recentRecords = computed(() => {
 });
 
 function handleTypeChange(type) {
-  currentType.value = type;
+  if (type != currentType.value) {
+    currentType.value = type;
+    statsStore.fetchStats(currentType.value, month.value, year.value)
+  }
 }
 
 const sumChartData = computed(() => ({
   labels: statsStore.categoriesMonthSum.map((item) => item.category),
   datasets: [
     {
-      data: statsStore.categoriesMonthSum.map((item) => item.sum),
+      data: statsStore.categoriesMonthSum.map((item) => item.stats),
       backgroundColor: statsStore.categoriesMonthSum.map((item) => item.color),
     },
   ],
@@ -110,10 +113,8 @@ const countChartData = computed(() => ({
   labels: statsStore.categoriesMonthCount.map((item) => item.category),
   datasets: [
     {
-      data: statsStore.categoriesMonthCount.map((item) => item.count),
-      backgroundColor: statsStore.categoriesMonthCount.map(
-        (item) => item.color
-      ),
+      data: statsStore.categoriesMonthCount.map((item) => item.stats),
+      backgroundColor: statsStore.categoriesMonthCount.map((item) => item.color),
     },
   ],
 }));
@@ -130,14 +131,14 @@ const prevMonth = async () => {
   const d = new Date(currentDate.value);
   d.setMonth(d.getMonth() - 1);
   currentDate.value = d;
-  await statsStore.fetchStats(month.value, year.value);
+  await statsStore.fetchStats(currentType.value, month.value, year.value);
 };
 
 const nextMonth = async () => {
   const d = new Date(currentDate.value);
   d.setMonth(d.getMonth() + 1);
   currentDate.value = d;
-  await statsStore.fetchStats(month.value, year.value);
+  await statsStore.fetchStats(currentType.value, month.value, year.value);
 };
 
 onMounted(async () => {
@@ -146,7 +147,7 @@ onMounted(async () => {
   await tagsStore.fetchTags();
   await unitsStore.fetchUnits();
   await recordsStore.fetchRecords();
-  await statsStore.fetchStats(month.value, year.value);
+  await statsStore.fetchStats(currentType.value, month.value, year.value);
 });
 </script>
 

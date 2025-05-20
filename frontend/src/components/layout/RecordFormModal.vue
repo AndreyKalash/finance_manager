@@ -2,6 +2,7 @@
   <div class="modal" v-if="modelValue">
     <div class="modal-content">
       <h3>{{ isEditing ? "Редактировать" : "Добавить" }} запись</h3>
+      {{ type }}
       <form @submit.prevent="submitForm">
         <label for="record-date">Дата</label>
         <input
