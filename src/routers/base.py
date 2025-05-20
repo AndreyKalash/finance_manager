@@ -193,7 +193,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         filters: List,
         limit: int = 100,
         skip: int = 0,
-        selectload_list: List = None,
+        selectload_list: List = [],
     ) -> List[ModelType]:
         return await select_data(
             session, 
@@ -201,17 +201,18 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
             filters, 
             limit=limit, 
             skip=skip, 
-            selectload=selectload_list or [],
+            selectload=selectload_list
         )
     
     async def create_base(
         self,
         session: AsyncSession,
         data: CreateSchemaType,
-        current_user: User,
-        names: List = None
+        kwargs: dict,
+        names: List = None,
+        exclude: list = []
     ) -> ModelType:
-        db_item = self.model(**data.model_dump(), **self.get_kwargs(current_user))
+        db_item = self.model(**data.model_dump(exclude=[*exclude]), **kwargs)
         await upload_data(session, db_item, names or [])
         return db_item
 
@@ -221,7 +222,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         current_user: User,
         data: UpdateSchemaType,
         item_id: UUID
-    ) -> Optional[ModelType]:
+    ):
         filters = self.get_filters(current_user)
         filters.append(self.model.id == item_id)
     
@@ -297,7 +298,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
     ) -> SchemaType:
         try:
             data = self.update_schema.model_validate(data)
-            db_item = await self.create_base(session, data, current_user)
+            db_item = await self.create_base(session, data, self.get_kwargs(current_user))
             return db_item.to_dto()
         except Exception as e:
             await session.rollback()
@@ -312,11 +313,10 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
     ) -> SchemaType:
         data = self.update_schema.model_validate(data)
         updated_item = await self.update_base(session, current_user, data, item_id)
-        
         if not updated_item:
             raise HTTPException(404, detail="Item not found")
             
-        return updated_item.to_dto()
+        return updated_item
 
 
     async def delete(

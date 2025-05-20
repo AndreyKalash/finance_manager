@@ -1,10 +1,18 @@
 <template>
   <div class="dropdown-wrapper" ref="dropdownRef">
-    <input
+    <input v-if="props.search"
       class="dropdown-input"
       :placeholder="placeholder"
       v-model="searchQuery"
       @focus="isOpen = true"
+    />
+    <input v-else
+      class="dropdown-input"
+      :placeholder="placeholder"
+      :value ="modelValue"
+      v-model="searchQuery"
+      @focus="isOpen = true"
+      @input="handleInput"
     />
 
     <div class="dropdown-content" v-show="isOpen">
@@ -35,7 +43,8 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+// eslint-disable-next-line no-unused-vars
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
   items: Array,
@@ -44,14 +53,15 @@ const props = defineProps({
   nameKey: { type: String, default: "name" },
   colorKey: { type: String, default: "color" },
   modelValue: [String, Number, Array],
-  multiple: Boolean,
+  search: { type: Boolean, default: false}
 });
 
 const emit = defineEmits(["update:modelValue", "select"]);
 
-const searchQuery = ref("");
+const searchQuery = ref('');
 const isOpen = ref(false);
 const dropdownRef = ref(null);
+
 
 const filteredItems = computed(() => {
   if (!props.items) return [];
@@ -59,15 +69,14 @@ const filteredItems = computed(() => {
     item[props.nameKey]?.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
+
+const handleInput = (event) => {
+  const value = event.target.value
+  searchQuery.value = value;
+  emit("update:modelValue", value);
+}
+
 const handleItemClick = (item) => {
-  if (props.multiple) {
-    const newValue = props.modelValue.includes(item.id)
-      ? props.modelValue.filter((id) => id !== item.id)
-      : [...props.modelValue, item.id];
-    emit("update:modelValue", newValue);
-  } else {
-    emit("update:modelValue", item.id);
-  }
   emit("select", item);
 };
 
@@ -76,19 +85,20 @@ function closeDropdown() {
 }
 
 defineExpose({
-  closeDropdown
+  closeDropdown,
+  searchQuery
 });
 
 watch(
   () => props.modelValue,
-  (val) => {
-    if (!props.multiple) {
-      const item = props.items.find((i) => i.id === val);
-      searchQuery.value = item ? item[props.nameKey] : "";
-    }
+  (newVal) => {
+    if (!props.items && props.search) return;
+    const selected = props.items.find((item) => item.id === newVal);
+    searchQuery.value += selected ? selected[props.nameKey] : "";
   },
   { immediate: true }
 );
+
 </script>
 
 <style scoped>

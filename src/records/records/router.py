@@ -11,35 +11,35 @@ from src.database.crud import select_data
 from src.models import Record, User, Tag
 
 from src.routers.base import BaseRouter
-from src.schemas import RecordDTO, RecordAddDTO
+from src.schemas import ExpenseRecordDTO, ExpenseRecordAddDTO, IncomeRecordAddDTO, IncomeRecordDTO
 
 class RecordRouter(BaseRouter):
-    def __init__(self, prefix, record_type_id):
+    def __init__(self, prefix, record_type_id, schema, create_schema):
         super().__init__(
             model=Record,
-            schema=RecordDTO,
-            create_schema=RecordAddDTO,
-            update_schema=RecordAddDTO,
+            schema=schema,
+            create_schema=create_schema,
+            update_schema=create_schema,
             prefix=prefix,
             tags=['records'],
             record_type_id=record_type_id
         )
         
     async def create_record(self, session:AsyncSession, data:BaseModel, current_user:User):
-        tags = await select_data(session, Tag, current_user.id, filters=[Tag.id.in_(data.tags)])
-        kwargs = self.get_kwargs()
+        tags = await select_data(session, Tag, filters=[Tag.id.in_(data.tags)])
+        kwargs = self.get_kwargs(current_user)
         kwargs['tags'] = tags
-        return await self.create_base(data, session, current_user, ['tags', 'unit', 'category'])
+        return await self.create_base(session, data, kwargs, ['tags', 'unit', 'category'], ['tags'])
     
     async def update_base(self, session:AsyncSession, current_user:User, data:BaseModel, item_id:UUID):
-        filters = self.get_filters().append(self.model.id==item_id)
+        filters = self.get_filters(current_user)
+        filters.append(self.model.id==item_id)
         record = await self.get_base(
             session,
-            current_user,
             filters,
             skip=0,
             limit=1,
-            selectload=[self.model.tags]
+            selectload_list=[self.model.tags]
         )
         if not record:
             raise HTTPException(status_code=404, detail="Record not found")
@@ -70,16 +70,18 @@ class RecordRouter(BaseRouter):
     
     async def create(
         self,
-        data: Annotated[type[BaseModel], Body()],
+        data: dict = Body(),
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user())
     ):
-        try:
+        # try:
+            data = self.create_schema.model_validate(data)
             db_item = await self.create_record(session, data, current_user)
-            return db_item.to_dto()
-        except Exception as e:
-            await session.rollback()
-            raise HTTPException(400, detail=str(e))
+            print(db_item)
+            return db_item
+        # except Exception as e:
+        #     await session.rollback()
+        #     raise HTTPException(400, detail=str(e))
         
 records_router = APIRouter(
     prefix="/records",
@@ -88,12 +90,16 @@ records_router = APIRouter(
 
 expense_router = RecordRouter(
     prefix="/expense_records",
-    record_type_id=1
+    record_type_id=1,
+    schema=ExpenseRecordDTO,
+    create_schema=ExpenseRecordAddDTO
 ).router
 
 income_router = RecordRouter(
     prefix="/income_records",
-    record_type_id=2
+    record_type_id=2,
+    schema=IncomeRecordDTO,
+    create_schema=IncomeRecordAddDTO
 ).router
 
 records_router.include_router(expense_router)

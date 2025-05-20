@@ -186,13 +186,13 @@ function editRecord(record) {
   showFormModal(record);
 }
 
-async function createRecord(record) {
-  await recordsStore.createRecord(record);
+async function createRecord(type, record) {
+  await recordsStore.createRecord(type, record);
   formModalVisible.value = false;
 }
 
-async function updateRecord(record) {
-  await recordsStore.updateRecord(record);
+async function updateRecord(type, record) {
+  await recordsStore.updateRecord(type, record);
   formModalVisible.value = false;
   editingRecord.value = null;
   if (props.fetchCharts) {

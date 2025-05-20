@@ -20,12 +20,12 @@
           required
         />
 
-        <label for="record-price">{{
+        <label for="record-amount">{{
           type == RTYPES.expense ? "Цена" : "Cумма"
         }}</label>
         <input
-          id="record-price"
-          v-model.number="formData.price"
+          id="record-amount"
+          v-model.number="formData.amount"
           type="number"
           step="0.01"
           placeholder="Цена"
@@ -35,15 +35,15 @@
         <template v-if="type == RTYPES.expense">
           <label for="record-unit">Единица измерения</label>
           <AppDropdown
-            ref="unitDropdown"
-            @select="handleUnitSelect"
+          class="dropdown"
+          ref="unitDropdown"
+            placeholder="Выберите единицу"
+            name-key="name"
             v-model="formData.unit_id"
             :show-color="false"
             :items="units"
-            placeholder="Выберите единицу"
-            name-key="name"
-            :clickable="true"
-            class="dropdown"
+            :search="true"
+            @select="handleUnitSelect"
           >
             <template #item="{ item }">
               <div>
@@ -79,6 +79,7 @@
           :items="categories"
           placeholder="Выберите категорию"
           name-key="name"
+          :search="true"
           class="dropdown"
         >
         </AppDropdown>
@@ -147,11 +148,11 @@ function getEmptyRecord() {
     id: "",
     record_date: new Date().toISOString().split("T")[0],
     name: "",
-    price: 0,
-    unit_quantity: 1,
-    product_quantity: 1,
-    unit_id: "",
-    category_id: "",
+    amount: 0,
+    unit_quantity: null,
+    product_quantity: null,
+    unit_id: null,
+    category_id: '',
     tags: [],
   };
 }
@@ -159,6 +160,8 @@ function getEmptyRecord() {
 const isEditing = computed(() => !!props.recordToEdit);
 
 const handleUnitSelect = (unit) => {
+  console.log(unit);
+  
   formData.value.unit_id = unit.id;
   formData.value.unit_quantity = unit.default_value;
   unitDropdown.value.closeDropdown();
@@ -180,11 +183,7 @@ function toggleTag(tagId) {
 }
 
 function submitForm() {
-  if (isEditing.value) {
-    emit("update", { ...formData.value });
-  } else {
-    emit("create", { ...formData.value });
-  }
+  emit(isEditing.value ? "update" : "create", props.type, { ...formData.value });
 }
 
 const handleClickOutside = (event) => {
@@ -220,7 +219,7 @@ watch(
         id: newVal.id || "",
         record_date: newVal.record_date,
         name: newVal.name,
-        price: Number(newVal.price),
+        amount: Number(newVal.amount),
         unit_quantity: Number(newVal.unit_quantity),
         product_quantity: Number(newVal.product_quantity),
         unit_id: newVal.unit?.id || "",

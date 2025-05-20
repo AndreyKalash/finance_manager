@@ -1,6 +1,7 @@
 <template>
   <div class="item-list">
     <h3 class="title primary">{{ title }}</h3>
+    {{ newName }}
     <div class="add-form">
       <AppDropdown
         ref="dropdownRef"
@@ -218,6 +219,7 @@ const handleAdd = () => {
     emit("add", payload);
   }
   resetForm();
+  dropdownRef.value.searchQuery = '';
 };
 
 const handleClickOutside = (event) => {
