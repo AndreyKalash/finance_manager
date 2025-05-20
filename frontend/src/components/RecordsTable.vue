@@ -1,5 +1,16 @@
 <template>
   <div class="table_view">
+    <div class="tabs">
+      <button
+        v-for="type in types"
+        :key="type.value"
+        :class="['tab-btn', { active: currentType === type.value }]"
+        @click="changeType(type.value)"
+      >
+        {{ type.label }}
+      </button>
+    </div>
+
     <div class="search" v-if="showSearch">
       <i class="fa-solid fa-magnifying-glass secondary"></i>
       <input
@@ -10,11 +21,7 @@
       />
     </div>
 
-    <div
-      class="table_container"
-      @mouseenter="onTableMouseEnter"
-      @mouseleave="onTableMouseLeave"
-    >
+    <div class="table_container" @mouseenter="onTableMouseEnter" @mouseleave="onTableMouseLeave">
       <table class="records_table">
         <thead>
           <tr>
@@ -26,63 +33,37 @@
           <tr v-for="(item, index) in filteredItems" :key="index">
             <td>{{ item.record_date }}</td>
             <td>{{ item.name }}</td>
-            <td>{{ item.price }}</td>
-            <td>{{ item.unit.name }}</td>
-            <td>{{ item.unit_quantity }}</td>
-            <td>{{ item.product_quantity }}</td>
+            <td>{{ item.amount }}</td>
+            <template v-if="currentType === RTYPES.expense">
+              <td>{{ item.unit.name }}</td>
+              <td>{{ item.unit_quantity }}</td>
+              <td>{{ item.product_quantity }}</td>
+            </template>
             <td>
               <span v-if="item.category" class="category-badge">
-                <span
-                  class="color-badge"
-                  :style="{ backgroundColor: item.category.color }"
-                ></span>
+                <span class="color-badge" :style="{ backgroundColor: item.category.color }"></span>
                 {{ item.category.name }}
               </span>
             </td>
             <td>
               <div class="tags-cell">
                 <template v-if="item.tags.length <= 3">
-                  <span
-                    v-for="tag in item.tags"
-                    :key="tag.id"
-                    class="tag-badge"
-                  >
-                    <span
-                      class="color-badge"
-                      :style="{ backgroundColor: tag.color }"
-                    ></span>
+                  <span v-for="tag in item.tags" :key="tag.id" class="tag-badge">
+                    <span class="color-badge" :style="{ backgroundColor: tag.color }"></span>
                     {{ tag.name }}
                   </span>
                 </template>
                 <template v-else>
-                  <span
-                    v-for="(tag, idx) in item.tags.slice(0, 2)"
-                    :key="tag.id"
-                    class="tag-badge"
-                  >
-                    <span
-                      class="color-badge"
-                      :style="{ backgroundColor: tag.color }"
-                    ></span>
+                  <span v-for="(tag, idx) in item.tags.slice(0, 2)" :key="tag.id" class="tag-badge">
+                    <span class="color-badge" :style="{ backgroundColor: tag.color }"></span>
                     {{ tag.name }}
                     <span v-if="idx < 1" class="tag-separator">,</span>
                   </span>
-                  <span
-                    class="tag-badge more-badge"
-                    @mouseenter="showTooltip = index"
-                    @mouseleave="showTooltip = null"
-                  >
+                  <span class="tag-badge more-badge" @mouseenter="showTooltip = index" @mouseleave="showTooltip = null">
                     +{{ item.tags.length - 2 }}
                     <span v-if="showTooltip === index" class="tag-tooltip">
-                      <span
-                        v-for="tag in item.tags.slice(2)"
-                        :key="tag.id"
-                        class="tag-badge"
-                      >
-                        <span
-                          class="color-badge"
-                          :style="{ backgroundColor: tag.color }"
-                        ></span>
+                      <span v-for="tag in item.tags.slice(2)" :key="tag.id" class="tag-badge">
+                        <span class="color-badge" :style="{ backgroundColor: tag.color }"></span>
                         {{ tag.name }}
                       </span>
                     </span>
@@ -105,6 +86,7 @@
       :categories="categories"
       :tags="tags"
       :units="units"
+      :type="currentType"
       @create="createRecord"
       @update="updateRecord"
     />
@@ -112,20 +94,45 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import RecordFormModal from "./layout/RecordFormModal.vue";
 import { useCategoriesStore } from "@/stores/categories";
 import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
 import { useRecordsStore } from "@/stores/records";
 import { useStatsStore } from "@/stores/stats";
+import { RTYPES } from "@/utils/recordTypes.js";
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
   showSearch: { type: Boolean, default: false },
-  headers: { type: Array, default: () => ["Дата", "Название", "Сумма"] },
   fetchCharts: { type: Boolean, default: false },
+  modelValue: {type: String, default: RTYPES.expense},
+  headers: { type: Array, required: false }
 });
+
+const headers = computed(() => {
+  const typedHeaders = currentType.value === RTYPES.expense 
+    ? ["Цена товара", "Единица измерения", "Количество единицы измерения", "Количество товара"]
+    : ["Сумма"]
+  
+  return [
+    "Дата",
+    "Название",
+    ...typedHeaders,
+    "Категория",
+    "Теги",
+  ]
+})
+
+const emit = defineEmits(["update:modelValue"]);
+
+const types = [
+  { value: RTYPES.expense, label: "Траты" },
+  { value: RTYPES.income, label: "Доходы" },
+];
+
+const currentType = ref(props.modelValue);
 
 const categoryStore = useCategoriesStore();
 const tagStore = useTagsStore();
@@ -139,13 +146,26 @@ const formModalVisible = ref(false);
 const editingRecord = ref(null);
 const showTooltip = ref(null);
 
-const categories = computed(() => categoryStore.categories);
-const tags = computed(() => tagStore.tags);
-const units = computed(() => unitStore.units);
+const categories = computed(() => categoryStore.categories[currentType.value] || []);
+const tags = computed(() => tagStore.tags[currentType.value] || []);
+const units = computed(() => unitStore.units || []);
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val && val !== currentType.value) currentType.value = val;
+  }
+);
+
+function changeType(type) {
+  currentType.value = type;
+  emit("update:modelValue", type);
+}
 
 const filteredItems = computed(() => {
-  if (!searchQuery.value) return props.items;
-  return props.items.filter((item) =>
+  const items = props.items || [];
+  if (!searchQuery.value) return items;
+  return items.filter((item) =>
     (item.name ?? "").toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
@@ -206,10 +226,34 @@ defineExpose({ showFormModal });
 </script>
 
 <style scoped>
+
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+.tab-btn {
+  padding: 8px 22px;
+  border: none;
+  border-radius: 7px 7px 0 0;
+  background: #29293b;
+  color: #bb86fc;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.tab-btn.active {
+  background: #03dac6;
+  color: #232323;
+  font-weight: bold;
+  box-shadow: 0 -2px 8px #03dac655;
+}
+.tab-btn:not(.active):hover {
+  background: #333;
+}
 .table_view {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .table_container {

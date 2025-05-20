@@ -9,12 +9,14 @@ export const useUnitsStore = defineStore("units", {
   }),
 
   actions: {
-    async fetchUnits() {
+    async fetchUnits(force=false) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await UnitsAPI.getUnits();
-        this.units = response.data?.items || response.data || [];
+        if (force || this.units.length == 0) {
+          const response = await UnitsAPI.getUnits();
+          this.units = response.data?.items || response.data || [];
+        }
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки тегов";
       } finally {

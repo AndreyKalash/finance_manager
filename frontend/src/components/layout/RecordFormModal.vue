@@ -20,7 +20,9 @@
           required
         />
 
-        <label for="record-price">Цена</label>
+        <label for="record-price">{{
+          type == RTYPES.expense ? "Цена" : "Cумма"
+        }}</label>
         <input
           id="record-price"
           v-model.number="formData.price"
@@ -30,40 +32,43 @@
           required
         />
 
-        <label for="record-unit">Единица измерения</label>
-        <AppDropdown
-          ref="unitDropdown"
-          @select="handleUnitSelect"
-          v-model="formData.unit_id"
-          :show-color="false"
-          :items="units"
-          placeholder="Выберите единицу"
-          name-key="name"
-          class="dropdown"
-        >
-          <template #item="{ item }">
-            <div>
-              <span>{{ item.name }}</span>
-              <span class="default-value">({{ item.default_value }})</span>
-            </div>
-          </template>
-        </AppDropdown>
+        <template v-if="type == RTYPES.expense">
+          <label for="record-unit">Единица измерения</label>
+          <AppDropdown
+            ref="unitDropdown"
+            @select="handleUnitSelect"
+            v-model="formData.unit_id"
+            :show-color="false"
+            :items="units"
+            placeholder="Выберите единицу"
+            name-key="name"
+            :clickable="true"
+            class="dropdown"
+          >
+            <template #item="{ item }">
+              <div>
+                <span>{{ item.name }}</span>
+                <span class="default-value">({{ item.default_value }})</span>
+              </div>
+            </template>
+          </AppDropdown>
 
-        <label for="record-unit-quantity">Количество единиц измерения</label>
-        <input
-          id="record-unit-quantity"
-          v-model.number="formData.unit_quantity"
-          type="number"
-          placeholder="Кол-во ед."
-        />
+          <label for="record-unit-quantity">Количество единиц измерения</label>
+          <input
+            id="record-unit-quantity"
+            v-model.number="formData.unit_quantity"
+            type="number"
+            placeholder="Кол-во ед."
+          />
 
-        <label for="record-product-quantity">Количество товара</label>
-        <input
-          id="record-product-quantity"
-          v-model.number="formData.product_quantity"
-          type="number"
-          placeholder="Кол-во товара"
-        />
+          <label for="record-product-quantity">Количество товара</label>
+          <input
+            id="record-product-quantity"
+            v-model.number="formData.product_quantity"
+            type="number"
+            placeholder="Кол-во товара"
+          />
+        </template>
 
         <label>Категория</label>
         <AppDropdown
@@ -78,24 +83,26 @@
         >
         </AppDropdown>
 
-        <label>Теги</label>
-        <div class="tags-container">
-          <div class="tags-list">
-            <div
-              v-for="tag in tags"
-              :key="tag.id"
-              class="tag-option"
-              :class="{ selected: formData.tags.includes(tag.id) }"
-              @click="toggleTag(tag.id)"
-            >
+        <template v-if="tags.length">
+          <label>Теги</label>
+          <div class="tags-container">
+            <div class="tags-list">
               <div
-                class="color-box"
-                :style="{ backgroundColor: tag.color }"
-              ></div>
-              <span>{{ tag.name }}</span>
+                v-for="tag in tags"
+                :key="tag.id"
+                class="tag-option"
+                :class="{ selected: formData.tags.includes(tag.id) }"
+                @click="toggleTag(tag.id)"
+              >
+                <div
+                  class="color-box"
+                  :style="{ backgroundColor: tag.color }"
+                ></div>
+                <span>{{ tag.name }}</span>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
 
         <div class="modal-actions">
           <button type="submit" class="add_row_btn">
@@ -117,6 +124,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import AppDropdown from "./AppDropdown.vue";
+import { RTYPES } from "@/utils/recordTypes";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -124,6 +132,7 @@ const props = defineProps({
   categories: Array,
   tags: Array,
   units: Array,
+  type: String,
 });
 
 const emit = defineEmits(["update:modelValue", "create", "update"]);

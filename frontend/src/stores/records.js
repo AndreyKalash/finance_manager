@@ -1,52 +1,69 @@
 import { defineStore } from "pinia";
 import { RecordsAPI } from "@/api/records";
+import { RTYPES } from "@/utils/recordTypes";
 
 export const useRecordsStore = defineStore("records", {
   state: () => ({
-    records: [],
+    records: {
+      [RTYPES.expense]: [],
+      [RTYPES.income]: []
+    },
     loading: false,
     error: null,
   }),
+  getters: {
+    hasRecords: (state) =>
+      state.records[RTYPES.expense].length > 0 &&
+      state.records[RTYPES.income].length > 0
+  },
 
   actions: {
-    async fetchRecords(limit = 50, skip = 0) {
+    async fetchRecords(limit = 50, skip = 0, force = false) {
+      if (!force && this.hasRecords) return;
       this.loading = true;
       this.error = null;
       try {
-        const response = await RecordsAPI.getRecords(limit, skip);
-        this.records = response.data;
+          if (force || this.records[RTYPES.expense].length == 0) {
+            const expenseResponse = await RecordsAPI.getRecords(RTYPES.expense, limit, skip);
+            this.records[RTYPES.expense] = expenseResponse.data;
+          }
+          if (force || this.records[RTYPES.income].length == 0) {
+            const incomeResponse = await RecordsAPI.getRecords(RTYPES.income, limit, skip);
+            this.records[RTYPES.income] = incomeResponse.data;
+          }
+      
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки записей";
       } finally {
         this.loading = false;
       }
     },
-    async createRecord(record) {
+    async createRecord(type, record) {
       this.error = null;
       try {
-        const { data } = await RecordsAPI.createRecord(record);
-        this.records.push(data);
+        const { data } = await RecordsAPI.createRecord(type, record);
+        this.records[type].push(data);
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка создания записи";
       }
     },
-    async updateRecord(record) {
+    async updateRecord(type, record) {
       this.error = null;
       try {
-        const { data } = await RecordsAPI.updateRecord(record);
-        const idx = this.records.findIndex((r) => r.id === record.id);
+        const { data } = await RecordsAPI.updateRecord(type, record);
+        const idx = this.records[type].findIndex((r) => r.id === record.id);
         if (idx !== -1) {
-          this.records[idx] = { ...this.records[idx], ...data };
+          this.records[type][idx] = { ...this.records[type][idx], ...data };
         }
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка обновления записи";
       }
     },
-    async deleteRecord(id) {
+    async deleteRecord(type, id) {
       this.error = null;
       try {
-        await RecordsAPI.deleteRecord(id);
-        this.records = this.records.filter((r) => r.id !== id);
+        await RecordsAPI.deleteRecord(type, id);
+        this.records[type] = this.records[type].filter((r) => r.id !== id);
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка удаления записи";
       }

@@ -44,10 +44,12 @@
         >
           <h2 class="title primary">Таблица трат</h2>
         </router-link>
+
         <RecordsTable
           :items="recentRecords"
-          :headers="headers"
           :fetch-charts="true"
+          :v-model="currentType"
+          @update:modelValue="handleTypeChange"
         />
       </div>
     </section>
@@ -64,6 +66,7 @@ import { useCategoriesStore } from "@/stores/categories";
 import { useAuthStore } from "@/stores/auth";
 import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
+import { RTYPES } from "@/utils/recordTypes.js";
 
 const currentDate = ref(new Date());
 const recordsStore = useRecordsStore();
@@ -73,16 +76,7 @@ const categoriesStore = useCategoriesStore();
 const tagsStore = useTagsStore();
 const unitsStore = useUnitsStore();
 
-const headers = [
-  "Дата",
-  "Название",
-  "Цена товара",
-  "Единица измерения",
-  "Количество единицы измерения",
-  "Количество товара",
-  "Категория",
-  "Теги",
-];
+const currentType = ref(RTYPES.expense);
 
 const currentMonth = computed(() => {
   return currentDate.value.toLocaleString("default", {
@@ -94,7 +88,13 @@ const currentMonth = computed(() => {
 const month = computed(() => currentDate.value.getMonth() + 1);
 const year = computed(() => currentDate.value.getFullYear());
 
-const recentRecords = computed(() => recordsStore.records.slice(0, 10));
+const recentRecords = computed(() => {
+  return recordsStore.records[currentType.value]?.slice(0, 10) || [];
+});
+
+function handleTypeChange(type) {
+  currentType.value = type;
+}
 
 const sumChartData = computed(() => ({
   labels: statsStore.categoriesMonthSum.map((item) => item.category),

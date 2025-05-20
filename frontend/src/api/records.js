@@ -1,16 +1,25 @@
+import { pathBilder } from "@/utils/api";
 import api from "./index";
 
+const path = "/records/"
+const expensePath = "expense_records/"
+const incomePath = "income_records/"
+
 export const RecordsAPI = {
-  async getRecords(limit, skip) {
-    return api.get("/records/", { limit, skip });
+  async getRecords(type, limit, skip) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.get(fullPath, { limit, skip });
   },
-  async createRecord(record) {
-    return api.post("/records/", { ...record });
+  async createRecord(type, record) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.post(fullPath, { ...record });
   },
-  async updateRecord(record) {
-    return api.patch(`/records/${record.id}`, { ...record });
+  async updateRecord(type, record) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.patch(fullPath + record.id, { ...record });
   },
-  async deleteRecord(id) {
-    return api.delete(`/records/${id}`);
+  async deleteRecord(type, id) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.delete(fullPath + id);
   },
 };

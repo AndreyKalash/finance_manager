@@ -1,16 +1,25 @@
 import api from "./index";
+import { pathBilder } from "../utils/api";
+
+const path = "/categories/"
+const expensePath = "expense_categories/"
+const incomePath = "income_categories/"
 
 export const CategoriesAPI = {
-  async getCategories() {
-    return api.get("/categories/");
+  async getCategories(type) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.get(fullPath);
   },
-  async createCategory(name, color) {
-    return api.post("/categories/", { name, color });
+  async createCategory(type, category) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.post(fullPath, { ...category });
   },
-  async updateCategory(id, name, color) {
-    return api.patch(`/categories/${id}`, { name, color });
+  async updateCategory(type, category) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.patch(fullPath + category.id, { name: category.name, color: category.color });
   },
-  async deleteCategory(id) {
-    return api.delete(`/categories/${id}`);
+  async deleteCategory(type, id) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.delete(fullPath + id);
   },
 };

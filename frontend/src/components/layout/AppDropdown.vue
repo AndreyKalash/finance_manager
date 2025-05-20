@@ -76,7 +76,7 @@ function closeDropdown() {
 }
 
 defineExpose({
-  closeDropdown,
+  closeDropdown
 });
 
 watch(

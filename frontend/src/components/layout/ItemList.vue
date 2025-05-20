@@ -9,12 +9,14 @@
         :placeholder="placeholder"
         :name-key="nameKey"
         :color-key="colorKey"
+        v-model="newName"
       >
         <template #item="{ item }">
           <li class="option-item">
             <template v-if="editingId === item.id">
               <div class="edit-wrapper" ref="editWrapperRef">
                 <ColorPicker
+                  v-if="!showDefaultValue"
                   @click.stop
                   v-model:pureColor="editColor"
                   picker-type="chrome"
@@ -36,6 +38,7 @@
                   @click.stop
                   v-model.number="editDefaultValue"
                   class="number_input"
+                  title="Значение по умолчанию"
                   @keyup.enter="saveEdit(item)"
                   step="0.01"
                   type="number"
@@ -71,7 +74,7 @@
                 </button>
                 <button
                   class="delete-btn"
-                  @click.stop="$emit('delete', item.id)"
+                  @click.stop="$emit('delete', props.itemType, item.id)"
                 >
                   🗑️
                 </button>
@@ -90,8 +93,10 @@
       />
       <input
         v-if="showDefaultValue"
+        @keyup.enter="saveEdit(item)"
         v-model.number="newDefaultValue"
         class="number_input"
+        title="Значение по умолчанию"
         step="0.01"
         type="number"
         min="0"
@@ -116,6 +121,7 @@ const props = defineProps({
   showDefaultValue: Boolean,
   nameKey: { type: String, default: "name" },
   colorKey: { type: String, default: "color" },
+  itemType: { type: String, required: false }
 });
 
 const emit = defineEmits(["add", "edit", "delete"]);
@@ -149,7 +155,7 @@ const filterOptions = () => {
     filteredItems.value = props.items.filter(
       (item) =>
         item &&
-        String(item[props.id])
+        String(item[props.nameKey])
           .toLowerCase()
           .includes(newName.value.toLowerCase())
     );
@@ -164,7 +170,7 @@ const startEdit = async (item) => {
 };
 
 const saveEdit = (item) => {
-  emit("edit", {
+  emit("edit", props.itemType, {
     ...item,
     [props.nameKey]: editName.value,
     ...(props.showColor && { [props.colorKey]: rgbToHex(editColor.value) }),
@@ -205,7 +211,12 @@ const handleAdd = () => {
     }),
   };
 
-  emit("add", payload);
+  
+  if (props.itemType) {
+    emit("add", props.itemType, payload);
+  } else {
+    emit("add", payload);
+  }
   resetForm();
 };
 
@@ -367,10 +378,9 @@ watch(
 }
 
 .number_input {
-  width: 20px !important;
-  max-width: 100%;
-  min-width: 4ch;
-  box-sizing: content-box;
+  width: 50px;
+  min-width: auto;
+  -moz-appearance: textfield;
   padding: 8px;
   border: 1px solid #444;
   background: #333;
@@ -378,6 +388,12 @@ watch(
   color: white;
   margin-right: 8px;
   flex-shrink: 0;
+}
+
+.number_input::-webkit-outer-spin-button,
+.number_input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 @media (max-width: 600px) {

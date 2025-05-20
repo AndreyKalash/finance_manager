@@ -16,7 +16,7 @@ async def categories_month_sum(
     
     stmt = (
         select(
-            func.sum(Record.price * Record.product_quantity).label('price_sum'),
+            func.sum(Record.amount * Record.product_quantity * Record.unit_quantity).label('amount_sum'),
             Category.name,
             Category.color
         )
@@ -26,8 +26,8 @@ async def categories_month_sum(
             Record.record_date >= start_date,
             Record.record_date < end_date
         )
-        .group_by(Category.id, Category.name)
-        .having(func.sum(Record.price * Record.product_quantity) > 0)
+        .group_by(Category.id, Category.name, Record.unit_quantity)
+        .having(func.sum(Record.amount * Record.product_quantity * Record.unit_quantity) > 0)
     )
     result = await session.execute(stmt)
     return result.all()
@@ -44,18 +44,19 @@ async def categories_month_count(
     
     stmt = (
         select(
-            func.count(Record.id).label('record_count'),
+            (func.count(Record.id) * Record.product_quantity * Record.unit_quantity).label('record_count'),
             Category.name,
             Category.color
         )
         .join(Category, Record.category_id == Category.id)
         .where(
             Record.user_id == current_user_uuid,
+            Record.record_type_id == 1,
             Record.record_date >= start_date,
             Record.record_date < end_date
         )
-        .group_by(Category.id, Category.name)
-        .having(func.count(Record.id) > 0)
+        .group_by(Category.id, Category.name, Record.product_quantity, Record.unit_quantity)
+        .having((func.count(Record.id) * Record.product_quantity * Record.unit_quantity) > 0)
     )
     result = await session.execute(stmt)
     return result.all()

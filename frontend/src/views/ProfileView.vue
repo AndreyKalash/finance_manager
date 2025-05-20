@@ -25,20 +25,44 @@
       <h1 class="primary title">Списки</h1>
       <div class="crud-flex-row">
         <ItemList
-          title="Категории"
-          :items="mainCategories"
+          title="Категории трат"
+          :items="expenseCategories"
           placeholder="Новая категория"
           :showColor="true"
+          :item-type="RTYPES.expense"
+          @add="handleAddCategory"
+          @edit="handleEditCategory"
+          @delete="handleDeleteCategory"
+          />
+          
+          <ItemList
+          title="Категории доходов"
+          :items="incomeCategories"
+          placeholder="Новая категория"
+          :showColor="true"
+          :item-type="RTYPES.income"
           @add="handleAddCategory"
           @edit="handleEditCategory"
           @delete="handleDeleteCategory"
         />
 
         <ItemList
-          title="Теги"
-          :items="tags"
+          title="Теги трат"
+          :items="expenseTags"
           placeholder="Новый тег"
           :showColor="true"
+          :item-type="RTYPES.expense"
+          @add="handleAddTag"
+          @edit="handleEditTag"
+          @delete="handleDeleteTag"
+        />
+
+        <ItemList
+          title="Теги доходов"
+          :items="incomeTags"
+          placeholder="Новый тег"
+          :showColor="true"
+          :item-type="RTYPES.income"
           @add="handleAddTag"
           @edit="handleEditTag"
           @delete="handleDeleteTag"
@@ -59,7 +83,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted} from "vue";
+import { RTYPES } from "@/utils/recordTypes";
 import { useCategoriesStore } from "@/stores/categories";
 import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
@@ -70,34 +95,37 @@ const tagsStore = useTagsStore();
 const unitsStore = useUnitsStore();
 
 const user = ref(null);
-const mainCategories = computed(() => categoriesStore.categories);
-const tags = computed(() => tagsStore.tags);
+const expenseCategories = computed(() => categoriesStore.categories[RTYPES.expense]);
+const expenseTags = computed(() => tagsStore.tags[RTYPES.expense]);
+const incomeCategories = computed(() => categoriesStore.categories[RTYPES.income]);
+const incomeTags = computed(() => tagsStore.tags[RTYPES.income]);
 const units = computed(() => unitsStore.units);
 
-const handleAddCategory = async ({ name, color }) => {
-  await categoriesStore.createCategory(name, color);
+const handleAddCategory = async (type, category) => {
+  await categoriesStore.createCategory(type, category);
 };
 
-const handleEditCategory = async (item) => {
-  await categoriesStore.updateCategory(item);
+const handleEditCategory = async (type, category) => {
+  await categoriesStore.updateCategory(type, category);
 };
 
-const handleDeleteCategory = async (id) => {
+const handleDeleteCategory = async (type, id) => {
   if (!confirm("Удалить категорию?")) return;
-  await categoriesStore.deleteCategory(id);
+  console.log(type, id);
+  await categoriesStore.deleteCategory(type, id);
 };
 
-const handleAddTag = async ({ name, color }) => {
-  await tagsStore.createTag(name, color);
+const handleAddTag = async (type, tag) => {
+  await tagsStore.createTag(type, tag);
 };
 
-const handleEditTag = async (item) => {
-  await tagsStore.updateTag(item);
+const handleEditTag = async (type, tag) => {  
+  await tagsStore.updateTag(type, tag);
 };
 
-const handleDeleteTag = async (id) => {
+const handleDeleteTag = async (type, tag) => {
   if (!confirm("Удалить тег?")) return;
-  await tagsStore.deleteTag(id);
+  await tagsStore.deleteTag(type, tag);
 };
 
 const handleAddUnit = async ({ name, default_value }) => {
@@ -116,6 +144,12 @@ const handleDeleteUnit = async (id) => {
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
+
+onMounted(async () => {
+  await categoriesStore.fetchCategories();
+  await tagsStore.fetchTags();
+  await unitsStore.fetchUnits();
+})
 </script>
 
 <style scoped>
@@ -145,7 +179,7 @@ const formatDate = (dateString) => {
 
 .crud-flex-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-top: 2rem;
 }

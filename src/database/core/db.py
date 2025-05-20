@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -18,6 +19,7 @@ class Base(DeclarativeBase):
 
         return f"<{self.__class__.__table__}: {', '.join(cols)}>"
 
+    def to_dto(self) -> BaseModel: ...
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:

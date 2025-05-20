@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, CheckConstraint, ForeignKey, Index
+from sqlalchemy import UUID, CheckConstraint, ForeignKey, Index, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 import src.database.core.mapped_types as mt
@@ -13,15 +13,27 @@ if TYPE_CHECKING:
     from src.models import Category, Tag, Unit, User
 
 
+class RecordType(Base):
+    __tablename__ = "record_type"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    
+    records: Mapped[list["Record"]] = relationship("Record", back_populates="record_type")
+    tags: Mapped[list["Tag"]] = relationship("Tag", back_populates="record_type")
+    categories: Mapped[list["Category"]] = relationship("Category", back_populates="record_type")
+    
+
+
 class Record(Base):
     __tablename__ = "record"
     id: Mapped[mt.UUID_PK]
 
     record_date: Mapped[date]
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(String(70))
     unit_quantity: Mapped[float]
     product_quantity: Mapped[int | None] 
-    price: Mapped[float]
+    amount: Mapped[float]
 
     created_at: Mapped[mt.CREATED_AT]
     updated_at: Mapped[mt.UPDATED_AT]
@@ -35,7 +47,11 @@ class Record(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID, ForeignKey("user.id"), nullable=True
     )
+    record_type_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("record_type.id"), nullable=False
+    )
 
+    record_type: Mapped["RecordType"] = relationship("RecordType", back_populates="records", lazy="selectin")
     user: Mapped["User"] = relationship("User", back_populates="records", lazy="selectin")
     unit: Mapped["Unit"] = relationship("Unit", back_populates="records", lazy="selectin")
     category: Mapped["Category"] = relationship("Category", back_populates="records", lazy="selectin")
@@ -54,8 +70,8 @@ class Record(Base):
         Index("idx_record_date", "record_date"),
         Index("idx_product_name", "name"),
         CheckConstraint("unit_quantity > 0", name="check_unit_quantity"),
-        CheckConstraint("quantity > 0", name="check_product_quantity"),
-        CheckConstraint("price >= 0", name="check_product_price"),
+        CheckConstraint("product_quantity > 0", name="check_product_quantity"),
+        CheckConstraint("amount >= 0", name="check_product_amount"),
     )
 
     def to_dto(self):
@@ -65,9 +81,8 @@ class Record(Base):
             name=self.name,
             unit_quantity=self.unit_quantity,
             product_quantity=self.product_quantity,
-            price=self.price,
+            amount=self.amount,
             unit=self.unit.to_dto() if self.unit else None,
             category=self.category.to_dto() if self.category else None,
             tags=[tag.to_dto() for tag in self.tags] if self.tags else []
         )
-

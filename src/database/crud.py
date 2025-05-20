@@ -1,19 +1,17 @@
 from typing import Any
 from uuid import UUID
-
+from src.database.core.db import Base
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase, MappedClassProtocol, selectinload
+from sqlalchemy.orm import MappedClassProtocol, selectinload
 
 
 async def select_data(
     session: AsyncSession,
-    model: type[DeclarativeBase],
-    current_user_uuid: UUID | None = None,
-    check_user: bool = True,
+    model: type[Base],
+    filters: list = [],
     limit: int = 1000,
     skip: int = 0,
-    filters: list = [],
     selectload: list = []
 ):
     load_options = [selectinload(rel) for rel in selectload]
@@ -25,8 +23,6 @@ async def select_data(
         .order_by(model.created_at)
         .where(*filters)
     )
-    if check_user:
-        query = query.where(model.user_id==current_user_uuid)
     
     result = await session.execute(query)
     return result.scalars().all()
@@ -56,11 +52,11 @@ async def upload_data(
 
 async def update_data(
     session: AsyncSession,
-    model: type[DeclarativeBase],
+    model: type[Base],
     update_data: dict[str, Any],
     filters: list,
     commit: bool = True
-) -> DeclarativeBase | None:
+) -> Base | None:
     stmt = update(model).where(*filters).values(**update_data).returning(model)
 
     result = await session.execute(stmt)
@@ -72,7 +68,7 @@ async def update_data(
 
 async def delete_data(
     session: AsyncSession, 
-    model: type[DeclarativeBase],
+    model: type[Base],
     filters: list,
     commit: bool = True
 ):

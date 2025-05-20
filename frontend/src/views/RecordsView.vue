@@ -14,7 +14,8 @@
       <RecordsTable
         ref="recordsTableRef"
         :items="filteredRecords"
-        :headers="headers"
+        :v-model="currentType"
+        @update:modelValue="handleTypeChange"
       />
 
       <button class="add_row_btn secondary" @click="showAddForm">
@@ -31,17 +32,7 @@ import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
 import { useRecordsStore } from "@/stores/records";
 import RecordsTable from "@/components/RecordsTable.vue";
-
-const headers = [
-  "Дата",
-  "Название",
-  "Цена товара",
-  "Единица измерения",
-  "Количество EМ",
-  "Количество товара",
-  "Категория",
-  "Теги",
-];
+import { RTYPES } from "@/utils/recordTypes.js";
 
 const categoryStore = useCategoriesStore();
 const tagStore = useTagsStore();
@@ -50,10 +41,11 @@ const recordsStore = useRecordsStore();
 const recordsTableRef = ref(null);
 
 const searchQuery = ref("");
+const currentType = ref(RTYPES.expense);
 
 const filteredRecords = computed(() => {
-  if (!searchQuery.value) return recordsStore.records;
-  return recordsStore.records.filter(
+  if (!searchQuery.value) return recordsStore.records[currentType.value];
+  return recordsStore.records[currentType.value]?.filter(
     (record) =>
       (record.name ?? "")
         .toLowerCase()
@@ -63,6 +55,10 @@ const filteredRecords = computed(() => {
         .includes(searchQuery.value.toLowerCase())
   );
 });
+
+function handleTypeChange(type) {
+  currentType.value = type;
+}
 
 function showAddForm() {
   recordsTableRef.value?.showFormModal();
@@ -82,7 +78,7 @@ onMounted(async () => {
 .table_view {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  margin: 20px 0px ;
 }
 
 .search {
