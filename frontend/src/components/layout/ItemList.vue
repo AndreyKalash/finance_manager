@@ -1,7 +1,6 @@
 <template>
   <div class="item-list">
     <h3 class="title primary">{{ title }}</h3>
-    {{ newName }}
     <div class="add-form">
       <AppDropdown
         ref="dropdownRef"
@@ -9,6 +8,7 @@
         :show-color="showColor"
         :placeholder="placeholder"
         :name-key="nameKey"
+        :self-close="false"
         :color-key="colorKey"
         v-model="newName"
       >

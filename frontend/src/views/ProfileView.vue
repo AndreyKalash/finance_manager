@@ -162,6 +162,10 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+.profile {
+  margin: 0px 20px;
+}
+
 .avatar img {
   width: 100px;
   height: 100px;

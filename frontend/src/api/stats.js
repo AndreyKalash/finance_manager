@@ -12,4 +12,8 @@ export const StatsAPI = {
       params: { month, year },
     });
   },
+  
+  async getTrend(type, filters) {
+    return api.post(`/stats/${type}/trend`, {...filters});
+  },
 };

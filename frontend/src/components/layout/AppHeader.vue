@@ -14,7 +14,8 @@
             </svg>
           </button>
           <ul v-if="showDropdown" class="dropdown-menu">
-            <li><router-link to="/profile">Профиль</router-link></li>
+            <li @click="toggleDropdown"><router-link to="/profile">Профиль</router-link></li>
+            <li @click="toggleDropdown"><router-link to="/analytics">Аналитика</router-link></li>
             <li @click="handleLogout">Выйти</li>
           </ul>
         </div>
@@ -131,6 +132,7 @@ document.addEventListener("click", (e) => {
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 60;
 }
 
 .dropdown-menu li {

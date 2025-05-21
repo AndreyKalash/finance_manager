@@ -5,6 +5,7 @@ export const useStatsStore = defineStore("stats", {
   state: () => ({
     categoriesMonthSum: [],
     categoriesMonthCount: [],
+    trend: [],
     loading: false,
     error: null,
     currentChartMonth: null,
@@ -20,6 +21,7 @@ export const useStatsStore = defineStore("stats", {
       this.currentChartMonth = month;
       this.currentChartYear = year;
     },
+
     async fetchCategoriesMonthSum(type, month, year) {
       this.loading = true;
       this.error = null;
@@ -33,7 +35,6 @@ export const useStatsStore = defineStore("stats", {
         this.loading = false;
       }
     },
-
     async fetchCategoriesMonthCount(type, month, year) {
       this.loading = true;
       this.error = null;
@@ -47,5 +48,19 @@ export const useStatsStore = defineStore("stats", {
         this.loading = false;
       }
     },
+
+    async fetchCustomCharts(type, filters) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await StatsAPI.getTrend(type, filters);
+        this.trend = response.data;
+      } catch (error) {
+        this.error =
+          error.response?.data?.detail || "Ошибка загрузки статистики";
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 });

@@ -21,6 +21,7 @@
           v-for="item in filteredItems"
           :key="item.id"
           class="option-item"
+          :class="{ selected: props.multiple && isSelected(item) }"
           @click.stop="handleItemClick(item)"
         >
           <slot name="item" :item="item">
@@ -43,8 +44,7 @@
 </template>
 
 <script setup>
-// eslint-disable-next-line no-unused-vars
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount} from "vue";
 
 const props = defineProps({
   items: Array,
@@ -53,7 +53,10 @@ const props = defineProps({
   nameKey: { type: String, default: "name" },
   colorKey: { type: String, default: "color" },
   modelValue: [String, Number, Array],
-  search: { type: Boolean, default: false}
+  search: { type: Boolean, default: false },
+  multiple: { type: Boolean, default: false},
+  selfClose: { type: Boolean, default: true},
+  
 });
 
 const emit = defineEmits(["update:modelValue", "select"]);
@@ -77,11 +80,38 @@ const handleInput = (event) => {
 }
 
 const handleItemClick = (item) => {
+  if (props.multiple) {
+    const newValue = props.modelValue.includes(item.id)
+      ? props.modelValue.filter((id) => id !== item.id)
+      : [...props.modelValue, item.id];
+    emit("update:modelValue", newValue);
+  }
   emit("select", item);
+};
+
+const isSelected = (item) => {
+  if (props.multiple) {
+    return props.modelValue.includes(item.id);
+  }
+  return props.modelValue === item.id;
 };
 
 function closeDropdown() {
   isOpen.value = false;
+}
+
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    isOpen.value = false;
+  }
+};
+if (props.selfClose) {
+  onMounted(() => {
+    document.addEventListener("click", handleClickOutside);
+  });
+  onBeforeUnmount(() => {
+    document.removeEventListener("click", handleClickOutside);
+  });
 }
 
 defineExpose({
@@ -128,6 +158,23 @@ watch(
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.option-item.selected {
+  background: #444 !important;
+  position: relative;
+}
+
+.option-item.selected::after {
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  color: #03dac6;
+}
+
+.option-item:hover:not(.selected) {
+  background: #373737;
 }
 
 .options-list {

@@ -32,6 +32,12 @@ const routes = [
     component: () => import("@/views/LoginView.vue"),
     meta: { requiresGuest: true },
   },
+  {
+    path: '/analytics',
+    name: 'analytics',
+    component: () => import('@/views/AnalyticsView.vue'),
+    meta: { requiresAuth: true }
+  }
 ];
 
 const router = createRouter({

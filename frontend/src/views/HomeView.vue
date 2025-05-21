@@ -58,7 +58,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import PieChart from "@/components/layout/PieChart.vue";
+import PieChart from "@/components/layout/AppChart.vue";
 import RecordsTable from "@/components/RecordsTable.vue";
 import { useRecordsStore } from "@/stores/records";
 import { useStatsStore } from "@/stores/stats";
@@ -157,6 +157,7 @@ onMounted(async () => {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
+  margin-top: 0px;
 }
 
 .records_chart {

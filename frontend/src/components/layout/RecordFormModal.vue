@@ -29,10 +29,11 @@
           v-model.number="formData.amount"
           type="number"
           step="0.01"
+          min="0.01"
           placeholder="Цена"
           required
-        />
-
+          />
+          
         <template v-if="type == RTYPES.expense">
           <label for="record-unit">Единица измерения</label>
           <AppDropdown
@@ -59,6 +60,7 @@
             id="record-unit-quantity"
             v-model.number="formData.unit_quantity"
             type="number"
+            min="1"
             placeholder="Кол-во ед."
           />
 
@@ -67,6 +69,7 @@
             id="record-product-quantity"
             v-model.number="formData.product_quantity"
             type="number"
+            min="1"
             placeholder="Кол-во товара"
           />
         </template>
@@ -149,9 +152,9 @@ function getEmptyRecord() {
     id: "",
     record_date: new Date().toISOString().split("T")[0],
     name: "",
-    amount: 0,
-    unit_quantity: null,
-    product_quantity: null,
+    amount: 1,
+    unit_quantity: 1,
+    product_quantity: 1,
     unit_id: null,
     category_id: '',
     tags: [],
@@ -160,9 +163,7 @@ function getEmptyRecord() {
 
 const isEditing = computed(() => !!props.recordToEdit);
 
-const handleUnitSelect = (unit) => {
-  console.log(unit);
-  
+const handleUnitSelect = (unit) => {  
   formData.value.unit_id = unit.id;
   formData.value.unit_quantity = unit.default_value;
   unitDropdown.value.closeDropdown();
