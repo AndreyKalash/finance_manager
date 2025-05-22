@@ -47,7 +47,7 @@ class Tag(Base):
 class RecordTag(Base):
     __tablename__ = "record_tag"
     record_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey("record.id"), primary_key=True
+        UUID, ForeignKey("record.id", ondelete='CASCADE'), primary_key=True
     )
     tag_id: Mapped[uuid.UUID] = mapped_column(
         UUID, ForeignKey("tag.id"), primary_key=True
