@@ -40,9 +40,9 @@
         <router-link
           to="/records"
           class="secondary"
-          title="Перейти на страницу трат"
+          title="Перейти на страницу записей"
         >
-          <h2 class="title primary">Таблица трат</h2>
+          <h2 class="title primary">Таблица записей</h2>
         </router-link>
 
         <RecordsTable
