@@ -7,7 +7,6 @@ from src.auth.auth_config import fastapi_auth
 from src.database.core.db import get_async_session
 from src.stats.database import categories_month_stats, trend
 from src.models import User
-# from src.records.records.models import RecordType
 
 from src.schemas import CategoryMonthStatsDTO, TrendBodyDTO, TrendDTO
 
