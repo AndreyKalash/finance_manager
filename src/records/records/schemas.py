@@ -13,15 +13,15 @@ from src.records.units.schemas import UnitDTO
 class RecordBaseDTO(BaseModel):
     record_date: date = Field(default=date.today())
     name: str
-    amount: Decimal = Field(ge=0)
+    amount: Decimal = Field(gt=0)
     
     class Config:
         extra = 'ignore'
 
 
 class ExpenseRecordBaseDTO(RecordBaseDTO):
-    unit_quantity: Decimal | None = None
-    product_quantity: int | None = None
+    unit_quantity: Decimal | None = Field(None, gt=0)
+    product_quantity: int | None = Field(None, gt=0)
 
 
 class IncomeRecordAddDTO(RecordBaseDTO):
