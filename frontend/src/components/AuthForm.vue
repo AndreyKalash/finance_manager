@@ -9,27 +9,35 @@
             type="email"
             placeholder="Электронная почта"
             required
-          />
+            @input="clearError('email')"
+            />
+          <span class="error">{{ errors.email }}</span>
           <input
             v-if="!isLoginMode"
             v-model="formData.username"
             type="text"
             placeholder="Логин"
             required
+            @input="clearError('username')"
           />
+          <span class="error">{{ errors.username }}</span>
           <input
             v-model="formData.password"
             type="password"
             placeholder="Пароль"
             required
+            @input="clearError('password')"
           />
+          <span class="error">{{ errors.password }}</span>
           <input
             v-if="!isLoginMode"
             v-model="formData.confirmPassword"
             type="password"
             placeholder="Повторите пароль"
             required
+            @input="clearError('confirmPassword')"
           />
+          <span class="error">{{ errors.confirmPassword }}</span>
           <button type="submit">
             {{ isLoginMode ? "Войти" : "Зарегистрироваться" }}
           </button>
@@ -68,7 +76,91 @@ const formData = ref({
   confirmPassword: "",
 });
 
+const errors = ref({
+  email: "",
+  username: "",
+  password: "",
+  confirmPassword: "",
+});
+
+const validateEmail = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!formData.value.email) {
+    errors.value.email = "Email обязателен";
+    return false;
+  }
+  if (!emailRegex.test(formData.value.email)) {
+    errors.value.email = "Некорректный формат email";
+    return false;
+  }
+  errors.value.email = "";
+  return true;
+};
+
+const validatePassword = () => {
+  if (!formData.value.password) {
+    errors.value.password = "Пароль обязателен";
+    return false;
+  }
+  if (formData.value.password.length < 6) {
+    errors.value.password = "Пароль должен быть не менее 6 символов";
+    return false;
+  }
+  errors.value.password = "";
+  return true;
+};
+
+const validateUsername = () => {
+  if (!isLoginMode.value) {
+    if (!formData.value.username) {
+      errors.value.username = "Логин обязателен";
+      return false;
+    }
+    if (formData.value.username.length < 3) {
+      errors.value.username = "Логин должен быть не менее 3 символов";
+      return false;
+    }
+  }
+  errors.value.username = "";
+  return true;
+};
+
+const validateConfirmPassword = () => {
+  if (!isLoginMode.value) {
+    if (!formData.value.confirmPassword) {
+      errors.value.confirmPassword = "Подтвердите пароль";
+      return false;
+    }
+    if (formData.value.password !== formData.value.confirmPassword) {
+      errors.value.confirmPassword = "Пароли не совпадают";
+      return false;
+    }
+  }
+  errors.value.confirmPassword = "";
+  return true;
+};
+
+const validateForm = () => {
+  let isValid = true;
+  
+  isValid = validateEmail() && isValid;
+  isValid = validatePassword() && isValid;
+  
+  if (!isLoginMode.value) {
+    isValid = validateUsername() && isValid;
+    isValid = validateConfirmPassword() && isValid;
+  }
+  
+  return isValid;
+};
+
+const clearError = (field) => {
+  errors.value[field] = "";
+  errorMessage.value = "";
+};
+
 const handleSubmit = async () => {
+  if (!validateForm()) return;
   if (isLoginMode.value) {
     await handleLogin();
   } else {
@@ -146,7 +238,7 @@ form {
 
 input {
   padding: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   color: black;
@@ -202,5 +294,11 @@ a:hover {
   color: #42b983;
   font-weight: 500;
   text-decoration: none;
+}
+.error {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 </style>
