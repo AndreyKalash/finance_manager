@@ -12,16 +12,18 @@
           </button>
           <div class="center_content">
             <h2 class="title primary">{{ currentType == RTYPES.expense ? 'Траты' : 'Доходы' }} за {{ currentMonth }}</h2>
-            <PieChart :chartData="sumChartData" :unit-symbol="'₽'" />
+            <p v-if="!sumChartData.labels.length">Нет данных</p>
+            <AppChart v-else :chartData="sumChartData" :unit-symbol="'₽'" />
           </div>
         </div>
       </div>
-
+      
       <div class="records_chart container">
         <div class="chart_container">
           <div class="center_content">
             <h2 class="title primary">Количество {{ currentType == RTYPES.expense ? 'трат' : 'доходов'  }} за {{ currentMonth }}</h2>
-            <PieChart :chartData="countChartData" :unit-symbol="'шт.'" />
+            <p v-if="!countChartData.labels.length">Нет данных</p>
+            <AppChart v-else :chartData="countChartData" :unit-symbol="'шт.'" />
           </div>
           <button
             class="nav_button right"
@@ -58,7 +60,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import PieChart from "@/components/layout/AppChart.vue";
 import RecordsTable from "@/components/RecordsTable.vue";
 import { useRecordsStore } from "@/stores/records";
 import { useStatsStore } from "@/stores/stats";
@@ -67,6 +68,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
 import { RTYPES } from "@/utils/recordTypes.js";
+import AppChart from "@/components/layout/AppChart.vue";
 
 const currentDate = ref(new Date());
 const recordsStore = useRecordsStore();

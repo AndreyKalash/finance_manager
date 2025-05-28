@@ -2,50 +2,20 @@
   <div class="item-list">
     <h3 class="title primary">{{ title }}</h3>
     <div class="add-form">
-      <AppDropdown
-        ref="dropdownRef"
-        :items="filteredItems"
-        :show-color="showColor"
-        :placeholder="placeholder"
-        :name-key="nameKey"
-        :self-close="false"
-        :color-key="colorKey"
-        v-model="newName"
-      >
+      <AppDropdown ref="dropdownRef" :items="filteredItems" :show-color="showColor" :placeholder="placeholder"
+        :name-key="nameKey" :self-close="false" :color-key="colorKey" v-model="newName">
         <template #item="{ item }">
           <li class="option-item">
             <template v-if="editingId === item.id">
               <div class="edit-wrapper" ref="editWrapperRef">
-                <ColorPicker
-                  v-if="!showDefaultValue"
-                  @click.stop
-                  v-model:pureColor="editColor"
-                  picker-type="chrome"
-                  disable-alpha
-                  class="color-badge color-picker-inline"
-                  :style="{ backgroundColor: editColor }"
-                  inline
-                />
-                <input
-                  @click.stop
-                  v-model="editName"
-                  class="edit-input"
-                  :placeholder="placeholder"
-                  @keyup.enter="saveEdit(item)"
-                  autofocus
-                />
-                <input
-                  v-if="showDefaultValue"
-                  @click.stop
-                  v-model.number="editDefaultValue"
-                  class="number_input"
-                  title="Значение по умолчанию"
-                  @keyup.enter="saveEdit(item)"
-                  step="0.01"
-                  type="number"
-                  min="0"
-                  placeholder="Значение по умолчанию"
-                />
+                <ColorPicker v-if="!showDefaultValue" @click.stop v-model:pureColor="editColor" picker-type="chrome"
+                  disable-alpha class="color-badge color-picker-inline" :style="{ backgroundColor: editColor }"
+                  inline />
+                <input @click.stop v-model="editName" class="edit-input" :placeholder="placeholder"
+                  @keyup.enter="saveEdit(item)" autofocus />
+                <input v-if="showDefaultValue" @click.stop v-model.number="editDefaultValue" class="number_input"
+                  title="Значение по умолчанию" @keyup.enter="saveEdit(item)" type="number" min="1"
+                  placeholder="Значение по умолчанию" />
                 <div class="list-actions">
                   <button class="save-btn" @click.stop="saveEdit(item)">
                     💾
@@ -58,12 +28,8 @@
             </template>
             <template v-else>
               <div class="item-content">
-                <span
-                  class="color-badge"
-                  v-if="showColor"
-                  :style="{ backgroundColor: item[colorKey] || '#000000' }"
-                  title="Цвет"
-                ></span>
+                <span class="color-badge" v-if="showColor" :style="{ backgroundColor: item[colorKey] }"
+                  title="Цвет"></span>
                 <span class="item-text">{{ item[nameKey] }}</span>
                 <span v-if="showDefaultValue" class="default-value">
                   ({{ item.default_value }})
@@ -73,10 +39,7 @@
                 <button class="edit-btn" @click.stop="startEdit(item)">
                   ✏️
                 </button>
-                <button
-                  class="delete-btn"
-                  @click.stop="$emit('delete', props.itemType, item.id)"
-                >
+                <button class="delete-btn" @click.stop="$emit('delete', props.itemType, item.id)">
                   🗑️
                 </button>
               </div>
@@ -85,24 +48,10 @@
         </template>
       </AppDropdown>
 
-      <ColorPicker
-        v-if="showColor"
-        v-model:pureColor="newColor"
-        picker-type="chrome"
-        disable-alpha
-        class="color-picker"
-      />
-      <input
-        v-if="showDefaultValue"
-        @keyup.enter="saveEdit(item)"
-        v-model.number="newDefaultValue"
-        class="number_input"
-        title="Значение по умолчанию"
-        step="0.01"
-        type="number"
-        min="0"
-        placeholder="Значение по умолчанию"
-      />
+      <ColorPicker v-if="showColor" v-model:pureColor="newColor" picker-type="chrome" disable-alpha
+        class="color-picker" />
+      <input v-if="showDefaultValue" v-model.number="newDefaultValue" class="number_input"
+        title="Значение по умолчанию" type="number" min="1" placeholder="Значение по умолчанию" />
       <button class="add-btn" @click="handleAdd">Добавить</button>
     </div>
   </div>
@@ -139,13 +88,13 @@ const editName = ref("");
 const newColor = ref("#3ddac9");
 const editColor = ref("#3ddac9");
 
-const newDefaultValue = ref(0);
-const editDefaultValue = ref(0);
+const newDefaultValue = ref(1);
+const editDefaultValue = ref(1);
 
 function resetForm() {
   newName.value = "";
   newColor.value = "#3ddac9";
-  newDefaultValue.value = 0;
+  newDefaultValue.value = 1;
   dropdownRef.value?.closeDropdown();
 }
 
@@ -167,7 +116,7 @@ const startEdit = async (item) => {
   editingId.value = item.id;
   editName.value = item[props.nameKey];
   editColor.value = item[props.colorKey] || "#3ddac9";
-  editDefaultValue.value = item.default_value ?? 0;
+  editDefaultValue.value = item.default_value ?? 1;
 };
 
 const saveEdit = (item) => {
@@ -212,7 +161,6 @@ const handleAdd = () => {
     }),
   };
 
-  
   if (props.itemType) {
     emit("add", props.itemType, payload);
   } else {
@@ -275,7 +223,7 @@ watch(
   cursor: default;
 }
 
-.color-picker >>> .vc-color-wrap {
+.color-picker>>>.vc-color-wrap {
   pointer-events: none;
 }
 

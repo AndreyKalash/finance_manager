@@ -1,6 +1,6 @@
 <template>
   <div class="chart">
-    <canvas :key="chartKey" ref="canvas"></canvas>
+    <canvas ref="canvas"></canvas>
   </div>
 </template>
 
@@ -29,7 +29,6 @@ const props = defineProps({
   sortDesc: { type: Boolean, default: true },
 });
 
-const chartKey = ref(0);
 const canvas = ref(null);
 const chartInstance = ref(null);
 
@@ -65,51 +64,78 @@ const mergedOptions = computed(() => ({
     tooltip: {
       callbacks: {
         label: (ctx) =>
-          `${ctx.parsed} ${props.unit || ""} ${ctx.dataset.label || ""}`,
+          `${ctx.parsed} ${props.unitSymbol || ""} ${ctx.dataset.label || ""}`,
       },
     },
   },
   ...props.chartOptions,
 }));
 
-const initChart = async () => {
-  await nextTick();
-
-  if (!canvas.value) {
-    console.error("Canvas element not found!");
-    return;
-  }
-
+const destroyChart = () => {
   if (chartInstance.value) {
-    chartInstance.value.destroy();
+    try {
+      chartInstance.value.destroy();
+    } catch (error) {
+      console.warn("Error destroying chart:", error);
+    }
     chartInstance.value = null;
-  }
-
-  try {
-    const ctx = canvas.value.getContext('2d');
-    if (!ctx) return;
-
-    chartInstance.value = new Chart(ctx, {
-      type: props.chartType,
-      data: processedData.value,
-      options: mergedOptions.value
-    });
-  } catch (error) {
-    console.error("Chart initialization error:", error);
   }
 };
 
-onMounted(initChart);
-watch([processedData, mergedOptions], initChart);
-watch(() => props.chartType, () => {
-  chartKey.value++;
+const validateCanvas = () => {
+  if (!canvas.value) {
+    return false;
+  }
+  
+  if (!canvas.value.isConnected) {
+    console.warn("Canvas element is not connected to DOM");
+    return false;
+  }
+  
+  return true;
+};
+
+const initChart = async () => {
+    try {
+      await nextTick();
+      
+      if (!validateCanvas()) {
+        return;
+      }
+
+      const ctx = canvas.value.getContext('2d');
+      if (!ctx) {
+        console.error("Cannot get 2D context from canvas");
+        return;
+      }
+
+      destroyChart();
+
+      chartInstance.value = new Chart(ctx, {
+        type: props.chartType,
+        data: processedData.value,
+        options: mergedOptions.value
+      });
+
+    } catch (error) {
+      console.error("Chart initialization error:", error);
+    }
+};
+
+onMounted(() => {
   nextTick().then(initChart);
 });
+
+watch([processedData, mergedOptions], () => {
+  initChart();
+}, { deep: true });
+
+watch(() => props.chartType, () => {
+  nextTick().then(initChart);
+});
+
 onBeforeUnmount(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
+  destroyChart();
 });
 </script>
 

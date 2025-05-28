@@ -1,11 +1,12 @@
 <template>
-
     <section class="records_chart_items">
         <div class="records_chart container">
             <div class="chart_container">
                 <div class="center_content">
-                    <AppChart :key="currentType.name" :chart-type="'line'" :chart-data="trendData" :chart-options="chartOptions" />
-
+                    <div v-if="isLoading" class="loading-spinner">
+                        Загрузка...
+                    </div>
+                      <AppChart v-else :key="`chart-${currentType.name}-${dataKey}`" :chart-type="'line'" :chart-data="trendData" :chart-options="chartOptions" />
                 </div>
             </div>
         </div>
@@ -13,42 +14,49 @@
     <section class="container">
         <div class="filter-section">
             <div class="date-range">
-                <input v-model="startDate" type="date" class="date-input" @change="updateFilters" />
+                <input v-model="startDate" type="date" class="date-input"/>
                 <span class="date-separator">—</span>
-                <input v-model="endDate" type="date" class="date-input" @change="updateFilters" />
+                <input v-model="endDate" type="date" class="date-input"/>
             </div>
 
             <div class="filter-dropdown">
                 <label>{{ 'Тип операции' + (currentType ? `: ${currentType.text}` : '') }}</label>
-                <AppDropdown :items="operationTypes" v-model="currentType" placeholder="Тип операции" name-key="text"
-                    value-key="value" @select="handleSelectType" :search="true" />
+                <AppDropdown :items="operationTypes" v-model="currentType.name" placeholder="Тип операции" name-key="text"
+                    value-key="value" @select="handleSelectType" :search="true" :disabled="isLoading" />
             </div>
 
             <div class="filter-dropdown">
                 <label>Категории</label>
                 <AppDropdown :show-color="true" :items="categories" placeholder="Выберите категории" name-key="name"
-                    :search="true" v-model="selectedCategories" :multiple="true" color-key="color"
-                    @update:modelValue="updateFilters" />
+                    :search="true" v-model="selectedCategories" :multiple="true" color-key="color" :disabled="isLoading"
+                    />
             </div>
 
             <div class="filter-dropdown">
                 <label>Теги</label>
                 <AppDropdown :show-color="true" :items="filteredTags" placeholder="Выберите теги" name-key="name"
-                    :search="true" v-model="selectedTags" :multiple="true" color-key="color"
-                    @update:modelValue="updateFilters" />
+                    :search="true" v-model="selectedTags" :multiple="true" color-key="color" :disabled="isLoading"
+                    />
             </div>
 
             <div v-if="currentType.name == RTYPES.expense" class="filter-dropdown">
                 <label>Единицы измерения</label>
                 <AppDropdown :items="unitsWithAll" placeholder="Все единицы" name-key="name" :search="true"
-                    v-model="selectedUnit" :multiple="true" @update:modelValue="updateFilters" />
+                    v-model="selectedUnit" :multiple="true" :disabled="isLoading" />
             </div>
+
+            <button 
+                class="apply-button"
+                @click="applyFilters"
+                :disabled="isLoading">
+                Применить
+            </button>
         </div>
     </section>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { RTYPES } from "@/utils/recordTypes";
 import { useStatsStore } from "@/stores/stats";
 import { useCategoriesStore } from "@/stores/categories";
@@ -56,6 +64,7 @@ import { useTagsStore } from "@/stores/tags";
 import { useUnitsStore } from "@/stores/units";
 import AppDropdown from "@/components/layout/AppDropdown.vue";
 import AppChart from "@/components/layout/AppChart.vue";
+import { isEqual } from 'lodash-es'; //
 
 const statsStore = useStatsStore();
 const categoriesStore = useCategoriesStore();
@@ -80,13 +89,11 @@ const unitsWithAll = computed(() => [
 ]);
 
 const categories = computed(() => categoriesStore.categories[currentType.value.name]);
-
 const filteredTags = computed(() => tagsStore.tags[currentType.value.name]);
 
-const handleSelectType = async (value) => {
-    currentType.value = value
-    await updateFilters();
-}
+const isLoading = ref(false);
+const dataKey = ref(0);
+const lastAppliedFilters = ref(null);
 
 function getDefaultStartDate() {
     const date = new Date();
@@ -98,30 +105,85 @@ function getDefaultEndDate() {
     return new Date().toISOString().split('T')[0];
 }
 
-async function updateFilters() {
-    const filters = {
-        start_date: startDate.value,
-        end_date: endDate.value,
-        categories: selectedCategories.value,
-        tags: selectedTags.value,
-        units: selectedUnit.value
-    };
-    await statsStore.fetchCustomCharts(currentType.value.name, filters);
-}
+const handleSelectType = async (value) => {
+    if (isLoading.value || currentType.value.name == value.name) return;
+    lastAppliedFilters.value = null;
+    isLoading.value = true;
+    try {
+        currentType.value = value;
+        await nextTick();
+        await applyFilters()
+        dataKey.value++;
+    } catch (error) {
+        console.error('Ошибка при смене типа:', error);
+    } finally {
+        setTimeout(() => {
+            isLoading.value = false;
+        }, 500);
+    }
+};
+
+const applyFilters = async () => {
+  const currentFilters = {
+    type: currentType.value.name,
+    start_date: startDate.value,
+    end_date: endDate.value,
+    categories: selectedCategories.value,
+    tags: selectedTags.value,
+    units: selectedUnit.value
+  };
+  if (isEqual(currentFilters, lastAppliedFilters.value)) {
+    isLoading.value = false;
+    return;
+  }
+  try {
+    isLoading.value = true;
+    await statsStore.fetchCustomCharts(currentType.value.name, currentFilters);
+    lastAppliedFilters.value = JSON.parse(JSON.stringify(currentFilters)); 
+    await nextTick()
+    dataKey.value++;
+  } catch (error) {
+    console.error('Ошибка при применении фильтров:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const typeConfig = computed(() => {
+  const configs = {
+    [RTYPES.expense]: {
+      color: '#9B59B6',
+      label: 'Расходы',
+      unitSymbol: '₽'
+    },
+    [RTYPES.income]: {
+      color: '#2ECC71', 
+      label: 'Доходы',
+      unitSymbol: '₽'
+    }
+  };
+  
+  return configs[currentType.value.name];
+});
 
 const trendData = computed(() => {
   const labels = statsStore.trend.map(item => item.date);
   const data = statsStore.trend.map(item => item.amount_sum);
+  const config = typeConfig.value;
   
   return {
     labels,
     datasets: [{
-      label: 'Сумма',
+      label: config.label,
       data,
-      borderColor: currentType.value.name === 'expense' ? '#9B59B6' : '#2ECC71',
+      borderColor: config.color,
+      backgroundColor: config.color + '20',
       borderWidth: 2,
       tension: 0.4, 
       pointRadius: 3,
+      pointBackgroundColor: config.color,
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
       fill: false
     }]
   };
@@ -129,35 +191,71 @@ const trendData = computed(() => {
 
 const chartOptions = computed(() => ({
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: true,
+      position: 'top',
+      labels: {
+        color: '#fff',
+        font: {
+          size: 14
+        }
+      }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: '#fff',
+      bodyColor: '#fff',
+      borderColor: typeConfig.value.color,
+      borderWidth: 1,
+      callbacks: {
+        label: (ctx) => `${ctx.parsed.y.toLocaleString()} ${typeConfig.value.unitSymbol}`
+      }
     }
   },
   scales: {
     x: {
-      grid: { display: false }
+      grid: { 
+        display: false 
+      },
+      ticks: {
+        color: '#9CA3AF'
+      }
     },
     y: {
-      beginAtZero: true
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(156, 163, 175, 0.1)'
+      },
+      ticks: {
+        color: '#9CA3AF',
+        callback: function(value) {
+          return value.toLocaleString() + ' ' + typeConfig.value.unitSymbol;
+        }
+      }
+    }
+  },
+  elements: {
+    point: {
+      hoverRadius: 6
     }
   }
 }));
 
 onMounted(async () => {
-    await Promise.all([
-        categoriesStore.fetchCategories(),
-        tagsStore.fetchTags(),
-        unitsStore.fetchUnits()
-    ]);
-
-    updateFilters();
-});
-
-watch(currentType, async () => {
-    selectedCategories.value = [];
-    selectedTags.value = [];
-    await updateFilters();
+    try {
+        await Promise.all([
+            categoriesStore.fetchCategories(),
+            tagsStore.fetchTags(),
+            unitsStore.fetchUnits()
+        ]);
+        
+        await nextTick();
+        await applyFilters();
+    } catch (error) {
+        console.error('Ошибка при инициализации:', error);
+    }
 });
 </script>
 
@@ -268,6 +366,48 @@ watch(currentType, async () => {
     transition: transform 0.2s ease;
 }
 
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #9CA3AF;
+    font-size: 1.1em;
+}
+
+.center_content {
+    transition: opacity 0.3s ease;
+}
+
+.apply-button {
+    padding: 0.8rem 1.5rem;
+    background: #5e81f4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 
+        background-color 0.25s ease,
+        transform 0.15s ease;
+    font-weight: 500;
+    align-self: center;
+    margin-left: auto;
+}
+
+.apply-button:hover {
+    background: #4769d1;
+}
+
+.apply-button:active {
+    transform: scale(0.98);
+}
+
+.apply-button:disabled {
+    background: #4b5563;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 
 @keyframes slideDown {
     from {
@@ -318,6 +458,10 @@ watch(currentType, async () => {
 
     .filter-dropdown {
         min-width: auto;
+    }
+    .apply-button {
+        width: 100%;
+        margin-top: 1rem;
     }
 }
 </style>
