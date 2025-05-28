@@ -4,21 +4,17 @@ from src.models import User
 from src.database.crud import delete_data, select_data, update_data, upload_data
 from pydantic import BaseModel
 
+
 async def get_items_common(
     session: AsyncSession,
     model: type[Base],
     current_user: User,
     record_type_id: int,
     limit: int,
-    skip: int
+    skip: int,
 ):
-    filters = [
-        model.record_type_id == record_type_id,
-        model.user_id==current_user
-    ]
-    items = await select_data(
-        session, model, filters, limit=limit, skip=skip
-    )
+    filters = [model.record_type_id == record_type_id, model.user_id == current_user]
+    items = await select_data(session, model, filters, limit=limit, skip=skip)
     return [item.to_dto() for item in items]
 
 

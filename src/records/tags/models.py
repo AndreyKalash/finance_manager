@@ -32,8 +32,9 @@ class Tag(Base):
     records: Mapped[list["Record"]] = relationship(
         "Record", secondary="record_tag", back_populates="tags"
     )
-    record_type: Mapped["RecordType"] = relationship("RecordType", back_populates="tags", lazy="selectin")
-    
+    record_type: Mapped["RecordType"] = relationship(
+        "RecordType", back_populates="tags", lazy="selectin"
+    )
 
     __table_args__ = (
         Index("idx_name_user", "name", "user_id", "record_type_id", unique=True),
@@ -47,13 +48,11 @@ class Tag(Base):
 class RecordTag(Base):
     __tablename__ = "record_tag"
     record_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey("record.id", ondelete='CASCADE'), primary_key=True
+        UUID, ForeignKey("record.id", ondelete="CASCADE"), primary_key=True
     )
     tag_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey("tag.id"), primary_key=True
+        UUID, ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True
     )
-    created_at: Mapped[mt.CREATED_AT]    
+    created_at: Mapped[mt.CREATED_AT]
 
-    __table_args__ = (
-        Index("uq_record_tag", "record_id", "tag_id", unique=True),
-    )
+    __table_args__ = (Index("uq_record_tag", "record_id", "tag_id", unique=True),)

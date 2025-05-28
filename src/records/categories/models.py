@@ -30,11 +30,14 @@ class Category(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="categories")
     records: Mapped[list["Record"]] = relationship("Record", back_populates="category")
-    record_type: Mapped["RecordType"] = relationship("RecordType", back_populates="categories", lazy="selectin")
-    
+    record_type: Mapped["RecordType"] = relationship(
+        "RecordType", back_populates="categories", lazy="selectin"
+    )
 
     __table_args__ = (
-        Index("idx_category_name_user", "name", "user_id", "record_type_id", unique=True),
+        Index(
+            "idx_category_name_user", "name", "user_id", "record_type_id", unique=True
+        ),
         Index("idx_category_color_user", "color", "user_id"),
     )
 

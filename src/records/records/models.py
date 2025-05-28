@@ -15,14 +15,17 @@ if TYPE_CHECKING:
 
 class RecordType(Base):
     __tablename__ = "record_type"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    
-    records: Mapped[list["Record"]] = relationship("Record", back_populates="record_type")
+
+    records: Mapped[list["Record"]] = relationship(
+        "Record", back_populates="record_type"
+    )
     tags: Mapped[list["Tag"]] = relationship("Tag", back_populates="record_type")
-    categories: Mapped[list["Category"]] = relationship("Category", back_populates="record_type")
-    
+    categories: Mapped[list["Category"]] = relationship(
+        "Category", back_populates="record_type"
+    )
 
 
 class Record(Base):
@@ -32,7 +35,7 @@ class Record(Base):
     record_date: Mapped[date]
     name: Mapped[str] = mapped_column(String(70))
     unit_quantity: Mapped[float | None]
-    product_quantity: Mapped[int | None] 
+    product_quantity: Mapped[int | None]
     amount: Mapped[float]
 
     created_at: Mapped[mt.CREATED_AT]
@@ -51,17 +54,25 @@ class Record(Base):
         Integer, ForeignKey("record_type.id"), nullable=False
     )
 
-    record_type: Mapped["RecordType"] = relationship("RecordType", back_populates="records", lazy="selectin")
-    user: Mapped["User"] = relationship("User", back_populates="records", lazy="selectin")
-    unit: Mapped["Unit"] = relationship("Unit", back_populates="records", lazy="selectin")
-    category: Mapped["Category"] = relationship("Category", back_populates="records", lazy="selectin")
+    record_type: Mapped["RecordType"] = relationship(
+        "RecordType", back_populates="records", lazy="selectin"
+    )
+    user: Mapped["User"] = relationship(
+        "User", back_populates="records", lazy="selectin"
+    )
+    unit: Mapped["Unit"] = relationship(
+        "Unit", back_populates="records", lazy="selectin"
+    )
+    category: Mapped["Category"] = relationship(
+        "Category", back_populates="records", lazy="selectin"
+    )
     tags: Mapped[list["Tag"]] = relationship(
-        "Tag", 
+        "Tag",
         secondary="record_tag",
         back_populates="records",
         cascade="save-update, merge, delete",
         passive_deletes=True,
-        lazy="selectin"
+        lazy="selectin",
     )
 
     repr_col_num = 5
@@ -82,5 +93,5 @@ class Record(Base):
             amount=self.amount,
             unit=self.unit.to_dto() if self.unit else None,
             category=self.category.to_dto() if self.category else None,
-            tags=[tag.to_dto() for tag in self.tags] if self.tags else []
+            tags=[tag.to_dto() for tag in self.tags] if self.tags else [],
         )

@@ -14,14 +14,14 @@ class RecordBaseDTO(BaseModel):
     record_date: date = Field(default=date.today())
     name: str
     amount: Decimal = Field(gt=0)
-    
+
     class Config:
-        extra = 'ignore'
+        extra = "ignore"
 
 
 class ExpenseRecordBaseDTO(RecordBaseDTO):
-    unit_quantity: Decimal | None = Field(None, gt=0)
-    product_quantity: int | None = Field(None, gt=0)
+    unit_quantity: Decimal | None = Field(1, gt=0)
+    product_quantity: int | None = Field(1, gt=0)
 
 
 class IncomeRecordAddDTO(RecordBaseDTO):
@@ -31,7 +31,7 @@ class IncomeRecordAddDTO(RecordBaseDTO):
 
 class IncomeRecordDTO(RecordBaseDTO):
     id: UUID
-    
+
     category: CategoryDTO
     tags: list[TagDTO]
 
@@ -44,7 +44,7 @@ class ExpenseRecordAddDTO(ExpenseRecordBaseDTO):
 
 class ExpenseRecordDTO(ExpenseRecordBaseDTO):
     id: UUID
-    
+
     unit: UnitDTO | None
     category: CategoryDTO
     tags: list[TagDTO]

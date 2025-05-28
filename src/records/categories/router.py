@@ -6,30 +6,35 @@ from src.models import Category
 from src.schemas import CategoryDTO, CategoryAddDTO
 
 
-class ExpenseCategoryRouter(BaseRouter[Category, CategoryDTO, CategoryAddDTO, CategoryAddDTO]):
+class ExpenseCategoryRouter(
+    BaseRouter[Category, CategoryDTO, CategoryAddDTO, CategoryAddDTO]
+):
     def __init__(self):
         super().__init__(
             model=Category,
             schema=CategoryDTO,
             create_schema=CategoryAddDTO,
             update_schema=CategoryAddDTO,
-            prefix='/expense_categories',
-            tags=['categories'],
-            record_type_id=1
+            prefix="/expense_categories",
+            tags=["categories"],
+            record_type_id=1,
         )
-        
-        
-class IncomeCategoryRouter(BaseRouter[Category, CategoryDTO, CategoryAddDTO, CategoryAddDTO]):
+
+
+class IncomeCategoryRouter(
+    BaseRouter[Category, CategoryDTO, CategoryAddDTO, CategoryAddDTO]
+):
     def __init__(self):
         super().__init__(
             model=Category,
             schema=CategoryDTO,
             create_schema=CategoryAddDTO,
             update_schema=CategoryAddDTO,
-            prefix='/income_categories',
-            tags=['categories'],
-            record_type_id=2
+            prefix="/income_categories",
+            tags=["categories"],
+            record_type_id=2,
         )
+
 
 categories_router = APIRouter(
     prefix="/categories",

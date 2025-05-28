@@ -21,6 +21,7 @@ class Base(DeclarativeBase):
 
     def to_dto(self) -> BaseModel: ...
 
+
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session

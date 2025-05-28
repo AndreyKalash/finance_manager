@@ -12,19 +12,15 @@ async def select_data(
     filters: list = [],
     limit: int = 1000,
     skip: int = 0,
-    selectload: list = []
+    selectload: list = [],
 ):
     load_options = [selectinload(rel) for rel in selectload]
     query = (
-        select(model)
-        .where(*filters)
-        .limit(limit)
-        .offset(skip)
-        .options(*load_options)
+        select(model).where(*filters).limit(limit).offset(skip).options(*load_options)
     )
-    if hasattr(model, 'created_at'):
+    if hasattr(model, "created_at"):
         query = query.order_by(model.created_at)
-        
+
     result = await session.execute(query)
     return result.scalars().all()
 
@@ -33,7 +29,7 @@ async def insert_data(
     session: AsyncSession,
     model: MappedClassProtocol,
     values: list[dict],
-    commit: bool = True
+    commit: bool = True,
 ):
     stmt = insert(model).values(values)
     await session.execute(stmt)
@@ -42,9 +38,7 @@ async def insert_data(
 
 
 async def upload_data(
-    session: AsyncSession,
-    model: MappedClassProtocol,
-    names: list = []
+    session: AsyncSession, model: MappedClassProtocol, names: list = []
 ):
     session.add(model)
     await session.commit()
@@ -56,7 +50,7 @@ async def update_data(
     model: type[Base],
     update_data: dict[str, Any],
     filters: list,
-    commit: bool = True
+    commit: bool = True,
 ) -> Base | None:
     stmt = update(model).where(*filters).values(**update_data).returning(model)
 
@@ -68,10 +62,7 @@ async def update_data(
 
 
 async def delete_data(
-    session: AsyncSession, 
-    model: type[Base],
-    filters: list,
-    commit: bool = True
+    session: AsyncSession, model: type[Base], filters: list, commit: bool = True
 ):
     stmt = delete(model).where(*filters)
 

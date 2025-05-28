@@ -22,25 +22,19 @@ def create_stat_endpoint(stat_type: str):
         current_user: User = Depends(current_user),
     ):
         stat_results = await categories_month_stats(
-            session,
-            current_user.id,
-            record_type_name,
-            stat_type,
-            month,
-            year
+            session, current_user.id, record_type_name, stat_type, month, year
         )
 
         return [
             CategoryMonthStatsDTO(
-                category=category_name,
-                stats=float(stats),
-                color=color
+                category=category_name, stats=float(stats), color=color
             )
             for stats, category_name, color in stat_results
         ]
-    
+
     endpoint.__name__ = f"get_categories_month_{stat_type}"
     return endpoint
+
 
 def create_trend_endpont():
     async def endpoint(
@@ -50,12 +44,7 @@ def create_trend_endpont():
         current_user: User = Depends(current_user),
     ):
         result = await trend(session, current_user.id, record_type_name, filters)
-        return [
-            TrendDTO(
-                date=d,
-                amount_sum=a
-            )
-            for d, a in result
-        ]
+        return [TrendDTO(date=d, amount_sum=a) for d, a in result]
+
     endpoint.__name__ = "get_income_expense_trend"
     return endpoint

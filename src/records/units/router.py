@@ -12,9 +12,8 @@ class UnitRouter(BaseRouter):
             create_schema=UnitAddDTO,
             update_schema=UnitAddDTO,
             prefix="/units",
-            tags=['units'],
-            )
-    
+            tags=["units"],
+        )
+
 
 units_router = UnitRouter().router
-

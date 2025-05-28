@@ -17,7 +17,7 @@ expense_router = BaseRouter(
     update_schema=TagAddDTO,
     prefix="/expense_tags",
     tags=["tags"],
-    record_type_id=1
+    record_type_id=1,
 ).router
 
 income_router = BaseRouter(
@@ -27,7 +27,7 @@ income_router = BaseRouter(
     update_schema=TagAddDTO,
     prefix="/income_tags",
     tags=["tags"],
-    record_type_id=2
+    record_type_id=2,
 ).router
 
 tags_router.include_router(expense_router)
