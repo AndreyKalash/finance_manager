@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import and_, select, func, cast, text, Date
+from sqlalchemy import and_, exists, select, func, cast, text, Date
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models import Record, Category, RecordType, RecordTag
@@ -81,6 +81,30 @@ async def trend(
             func.sum(Record.amount * Record.product_quantity * Record.unit_quantity), 0
         )
 
+    join_conditions = [
+        Record.record_date >= date_windows.c.window_start,
+        Record.record_date <= date_windows.c.window_end,
+        Record.user_id == current_user_uuid,
+        Record.record_type_id == (
+            select(RecordType.id)
+            .where(RecordType.name == record_type_name)
+            .scalar_subquery()
+        )
+    ]
+    
+    if filters.categories:
+        join_conditions.append(Record.category_id.in_(filters.categories))
+
+    if filters.tags:
+        join_conditions.append(exists(
+            select(RecordTag.record_id).where(
+                RecordTag.tag_id.in_(filters.tags)
+            ).correlate(Record)
+        ))
+
+    if filters.units:
+        join_conditions.append(Record.unit_id.in_(filters.units))
+
     query = (
         select(
             func.cast(date_windows.c.window_start, Date).label("date"),
@@ -89,36 +113,10 @@ async def trend(
         .select_from(
             date_windows.outerjoin(
                 Record,
-                and_(
-                    Record.record_date >= date_windows.c.window_start,
-                    Record.record_date <= date_windows.c.window_end,
-                    Record.user_id == current_user_uuid,
-                    Record.record_type_id
-                    == (
-                        select(RecordType.id)
-                        .where(RecordType.name == record_type_name)
-                        .scalar_subquery()
-                    ),
-                ),
+                and_(*join_conditions),
             )
         )
         .group_by(date_windows.c.window_start)
         .order_by(date_windows.c.window_start)
     )
-
-    if filters.categories:
-        query = query.where(Record.category_id.in_(filters.categories))
-
-    if filters.tags:
-        query = query.where(
-            Record.id.in_(
-                select(RecordTag.record_id)
-                .where(RecordTag.tag_id.in_(filters.tags))
-                .scalar_subquery()
-            )
-        )
-
-    if filters.units:
-        query = query.where(Record.unit_id.in_(filters.units))
-
     return await session.execute(query)
