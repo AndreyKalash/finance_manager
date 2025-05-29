@@ -1,20 +1,24 @@
 <template>
   <main class="main">
+    <!-- Секция графиков с навигацией по месяцам -->
     <section class="records_chart_items">
       <div class="records_chart container">
         <div class="chart_container">
+          <!-- Кнопка навигации: предыдущий месяц -->
           <button class="nav_button left" @click="prevMonth" aria-label="Предыдущий месяц">
             <font-awesome-icon :icon="['fas', 'chevron-left']" />
           </button>
+          <!-- Основной блок графика сумм -->
           <div class="center_content">
             <h2 class="title primary">{{ currentType == RTYPES.expense ? 'Траты' : 'Доходы' }} за {{ currentMonth }}
             </h2>
             <p v-if="!sumChartData.labels.length">Нет данных</p>
+            <!-- Компонент графика с передачей данных и символа валюты -->
             <AppChart v-else :chartData="sumChartData" :unit-symbol="'₽'" />
           </div>
         </div>
       </div>
-
+      <!-- График количества записей -->
       <div class="records_chart container">
         <div class="chart_container">
           <div class="center_content">
@@ -23,19 +27,20 @@
             <p v-if="!countChartData.labels.length">Нет данных</p>
             <AppChart v-else :chartData="countChartData" :unit-symbol="'шт.'" />
           </div>
+          <!-- Кнопка следующего месяца с блокировкой при текущем месяце -->
           <button class="nav_button right" :disabled="isCurrentMonth" @click="nextMonth" aria-label="Следующий месяц">
             <font-awesome-icon :icon="['fas', 'chevron-right']" />
           </button>
         </div>
       </div>
     </section>
-
+    <!-- Секция таблицы последних записей -->
     <section class="records container">
       <div class="table_view">
         <router-link to="/records" class="secondary" title="Перейти на страницу записей">
           <h2 class="title primary">Таблица записей</h2>
         </router-link>
-
+        <!-- Компонент таблицы с обработчиком смены типа записей -->
         <RecordsTable :items="recentRecords" :fetch-charts="true" :v-model="currentType"
           @update:modelValue="handleTypeChange" />
       </div>
@@ -74,18 +79,18 @@ const currentMonth = computed(() => {
 
 const month = computed(() => currentDate.value.getMonth() + 1);
 const year = computed(() => currentDate.value.getFullYear());
-
+// Последние 10 записей текущего типа
 const recentRecords = computed(() => {
   return recordsStore.records[currentType.value]?.slice(0, 10) || [];
 });
-
+// Обработчик смены типа записей
 function handleTypeChange(type) {
   if (type != currentType.value) {
     currentType.value = type;
     statsStore.fetchStats(currentType.value, month.value, year.value)
   }
 }
-
+// Данные для графика сумм
 const sumChartData = computed(() => ({
   labels: statsStore.categoriesMonthSum.map((item) => item.category),
   datasets: [
@@ -95,7 +100,7 @@ const sumChartData = computed(() => ({
     },
   ],
 }));
-
+// Данные для графика количества
 const countChartData = computed(() => ({
   labels: statsStore.categoriesMonthCount.map((item) => item.category),
   datasets: [
@@ -105,7 +110,7 @@ const countChartData = computed(() => ({
     },
   ],
 }));
-
+// Проверка, является ли текущий месяц текущим в системе
 const isCurrentMonth = computed(() => {
   const now = new Date();
   return (
@@ -113,14 +118,14 @@ const isCurrentMonth = computed(() => {
     currentDate.value.getFullYear() === now.getFullYear()
   );
 });
-
+// Навигация: предыдущий месяц
 const prevMonth = async () => {
   const d = new Date(currentDate.value);
   d.setMonth(d.getMonth() - 1);
   currentDate.value = d;
   await statsStore.fetchStats(currentType.value, month.value, year.value);
 };
-
+// Навигация: следующий месяц
 const nextMonth = async () => {
   const d = new Date(currentDate.value);
   d.setMonth(d.getMonth() + 1);

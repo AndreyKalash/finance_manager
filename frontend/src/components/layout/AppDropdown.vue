@@ -1,36 +1,21 @@
+<!-- AppDropdown.vue -->
 <template>
   <div class="dropdown-wrapper" ref="dropdownRef">
-    <input v-if="props.search"
-      class="dropdown-input"
-      :placeholder="placeholder"
-      v-model="searchQuery"
-      @focus="isOpen = true"
-    />
-    <input v-else
-      class="dropdown-input"
-      :placeholder="placeholder"
-      :value ="modelValue"
-      v-model="searchQuery"
-      @focus="isOpen = true"
-      @input="handleInput"
-    />
-
+    <!-- Условный рендеринг поля ввода в зависимости от режима поиска -->
+    <input v-if="props.search" class="dropdown-input" :placeholder="placeholder" v-model="searchQuery"
+      @focus="isOpen = true" />
+    <!-- Базовый инпут без поиска с прямой привязкой значения -->
+      <input v-else class="dropdown-input" :placeholder="placeholder" :value="modelValue" v-model="searchQuery"
+      @focus="isOpen = true" @input="handleInput" />
+    <!-- Контейнер выпадающего списка с управляемой видимостью -->
     <div class="dropdown-content" v-show="isOpen">
       <ul class="options-list">
-        <li
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="option-item"
-          :class="{ selected: props.multiple && isSelected(item) }"
-          @click.stop="handleItemClick(item)"
-        >
+        <!-- Рендеринг отфильтрованных элементов списка -->
+        <li v-for="item in filteredItems" :key="item.id" class="option-item"
+          :class="{ selected: props.multiple && isSelected(item) }" @click.stop="handleItemClick(item)">
           <slot name="item" :item="item">
             <div class="default-item">
-              <span
-                v-if="showColor"
-                class="color-badge"
-                :style="{ backgroundColor: item[colorKey] }"
-              ></span>
+              <span v-if="showColor" class="color-badge" :style="{ backgroundColor: item[colorKey] }"></span>
               <span class="item-text">{{ item[nameKey] }}</span>
             </div>
           </slot>
@@ -44,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount} from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   items: Array,
@@ -54,9 +39,9 @@ const props = defineProps({
   colorKey: { type: String, default: "color" },
   modelValue: [String, Number, Array],
   search: { type: Boolean, default: false },
-  multiple: { type: Boolean, default: false},
-  selfClose: { type: Boolean, default: true},
-  
+  multiple: { type: Boolean, default: false },
+  selfClose: { type: Boolean, default: true },
+
 });
 
 const emit = defineEmits(["update:modelValue", "select"]);
@@ -72,13 +57,13 @@ const filteredItems = computed(() => {
     item[props.nameKey]?.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
-
+// Обработчик ввода для обычного режима
 const handleInput = (event) => {
   const value = event.target.value
   searchQuery.value = value;
   emit("update:modelValue", value);
 }
-
+// Обработчик выбора элемента
 const handleItemClick = (item) => {
   if (props.multiple) {
     const newValue = props.modelValue.includes(item.id)
@@ -99,7 +84,7 @@ const isSelected = (item) => {
 function closeDropdown() {
   isOpen.value = false;
 }
-
+// Обработчик клика вне компонента
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isOpen.value = false;

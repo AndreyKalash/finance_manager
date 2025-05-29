@@ -1,4 +1,6 @@
+<!-- AnalyticsView.vue -->
 <template>
+  <!-- Секция для отображения графиков -->
   <section class="records_chart_items">
     <div class="records_chart container">
       <div class="chart_container">
@@ -6,12 +8,15 @@
           <div v-if="isLoading" class="loading-spinner">
             Загрузка...
           </div>
-          <AppChart v-else-if="!isLoading && trendData.datasets.length > 0" :chart-key="`chart-${currentType.name}-${dataKey}`" :chart-type="'line'" :chart-data="trendData"
+          <!-- Компонент графика с уникальным ключом для принудительного ререндера -->
+          <AppChart v-else-if="!isLoading && trendData.datasets.length > 0"
+            :chart-key="`chart-${currentType.name}-${dataKey}`" :chart-type="'line'" :chart-data="trendData"
             :chart-options="chartOptions" />
         </div>
       </div>
     </div>
   </section>
+  <!-- Секция фильтров -->
   <section class="container">
     <div class="filter-section">
       <div class="date-range">
@@ -45,6 +50,7 @@
       </div>
 
     </div>
+    <!-- Кнопка применения фильтров -->
     <button class="apply-button" @click="applyFilters" :disabled="isLoading">
       Применить
     </button>
@@ -100,7 +106,7 @@ function getDefaultStartDate() {
 function getDefaultEndDate() {
   return new Date().toISOString().split('T')[0];
 }
-
+// Обработчик смены типа операции
 const handleSelectType = async (value) => {
   if (isLoading.value || currentType.value.name == value.name) return;
   lastAppliedFilters.value = null;
@@ -118,8 +124,8 @@ const handleSelectType = async (value) => {
     }, 500);
   }
 };
-
-const applyFilters = async (needCheck=true) => {
+// Применение фильтров с проверкой изменений
+const applyFilters = async (needCheck = true) => {
   const currentFilters = {
     start_date: startDate.value,
     end_date: endDate.value,
@@ -135,14 +141,14 @@ const applyFilters = async (needCheck=true) => {
     isLoading.value = true;
     await statsStore.fetchCustomCharts(currentType.value.name, currentFilters);
     lastAppliedFilters.value = JSON.parse(JSON.stringify(currentFilters));
-    // dataKey.value++;
+    dataKey.value++;
   } catch (error) {
     console.error('Ошибка при применении фильтров:', error);
   } finally {
     isLoading.value = false;
   }
 };
-
+// Конфигурация отображения для разных типов операций
 const typeConfig = computed(() => {
   const configs = {
     [RTYPES.expense]: {
@@ -159,9 +165,9 @@ const typeConfig = computed(() => {
 
   return configs[currentType.value.name];
 });
-
+// Формирование данных для графика
 const trendData = computed(() => {
-  const trend = statsStore.trend  
+  const trend = statsStore.trend
   const labels = trend.map(item => item.date);
   const data = trend.map(item => item.amount_sum);
   const config = typeConfig.value;
@@ -183,7 +189,7 @@ const trendData = computed(() => {
     }]
   };
 });
-
+// Настройки отображения графика
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,

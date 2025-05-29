@@ -1,25 +1,27 @@
+<!-- RecordsView.vue -->
 <template>
   <section class="records container">
     <div class="table_view">
       <div class="search">
         <i class="fa-solid fa-magnifying-glass secondary"></i>
+        <!-- Поле ввода с двусторонним связыванием для поиска -->
         <input type="search" v-model="searchQuery" placeholder="Поиск по таблице" id="records_search" />
       </div>
-
+      <!-- Компонент таблицы с передачей отфильтрованных данных -->
       <RecordsTable ref="recordsTableRef" :items="filteredRecords" :v-model="currentType"
         @update:modelValue="handleTypeChange" />
-
+      <!-- Блок кнопок действий -->
       <div class="buttons">
         <button class="row_btn secondary" @click="showAddForm">
           Добавить запись
         </button>
-  
+        <!-- Кнопка открытия модалки экспорта -->
         <button class="row_btn secondary" @click="isExportModalOpen = true">
           <i class="fa-solid fa-file-export"></i>
           Экспорт
         </button>
       </div>
-
+      <!-- Модальное окно экспорта -->
       <div v-if="isExportModalOpen" class="export-modal">
         <div class="modal-content">
           <span class="close" @click="isExportModalOpen = false">&times;</span>
@@ -73,7 +75,7 @@ const filteredRecords = computed(() => {
         .includes(searchQuery.value.toLowerCase())
   );
 });
-
+// Обработчик экспорта данных
 const handleExport = async () => {
   try {
     await recordsStore.exportRecords(currentType.value, selectedFileType.value)
@@ -109,7 +111,7 @@ onMounted(async () => {
   margin: 20px 0px;
 }
 
-.buttons{
+.buttons {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;

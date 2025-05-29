@@ -19,7 +19,7 @@
       </div>
     </div>
   </section>
-
+  <!-- Секция управления сущностями через кастомные компоненты -->
   <section>
     <div class="settings container">
       <h1 class="primary title">Списки</h1>

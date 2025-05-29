@@ -11,6 +11,13 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 async def generate_csv(data: list[dict], record_type_id: int) -> BytesIO:
+    """
+    Генерация CSV отчета с учетом типа записи (расход/доход)
+    
+    :param data: Список словарей с данными записей
+    :param record_type_id: 1 - расходы, 2 - доходы
+    :return: BytesIO буфер с CSV данными
+    """
     text_buffer = StringIO()
     
     headers = [
@@ -47,6 +54,13 @@ async def generate_csv(data: list[dict], record_type_id: int) -> BytesIO:
     return bytes_buffer
 
 async def generate_excel(data: list[dict], record_type_id: int) -> BytesIO:
+    """
+    Генерация Excel файла с автоматическим форматированием
+    
+    :param data: Список словарей с данными записей
+    :param record_type_id: 1 - расходы, 2 - доходы 
+    :return: BytesIO буфер с XLSX данными
+    """
     buffer = BytesIO()
     
     excel_data = []
@@ -82,9 +96,16 @@ async def generate_excel(data: list[dict], record_type_id: int) -> BytesIO:
 
     buffer.seek(0)
     return buffer
-
+# Регистрация кастомного шрифта для поддержки кириллицы в PDF
 pdfmetrics.registerFont(TTFont("DejaVuSerif", "DejaVuSerif.ttf"))
 async def generate_pdf(data: list[dict], record_type_id: int) -> BytesIO:
+    """
+    Генерация PDF отчета с табличным представлением данных
+    
+    :param data: Список словарей с данными записей
+    :param record_type_id: 1 - расходы, 2 - доходы
+    :return: BytesIO буфер с PDF данными
+    """
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     elements = []
@@ -138,5 +159,11 @@ async def generate_pdf(data: list[dict], record_type_id: int) -> BytesIO:
 
 
 def generate_filename(extension: str) -> str:
+    """
+    Генерация уникального имени файла на основе текущего времени
+    
+    :param extension: Расширение файла (csv, xlsx, pdf)
+    :return: Строка с именем файла
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"records_{timestamp}.{extension}"

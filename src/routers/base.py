@@ -1,3 +1,4 @@
+# base.py
 from typing import Generic, List, Optional, Type, TypeVar, Dict, Any
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Path, Response
@@ -7,7 +8,7 @@ from src.database.core.db import Base, get_async_session
 from src.models import User
 from src.auth.auth_config import fastapi_auth
 from src.database.crud import delete_data, select_data, update_data, upload_data
-
+# Объявление дженерик-типов для гибкой работы с разными моделями и схемами
 ModelType = TypeVar("ModelType", bound=Base)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -32,6 +33,24 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         custom_responses: Dict[str, Dict[int, Dict[str, Any]]] = None,
         description: str = "",
     ):
+        """
+        Базовый роутер для CRUD операций.
+        
+        :param model: SQLAlchemy модель
+        :param schema: Pydantic схема для ответов
+        :param create_schema: Схема для создания записей
+        :param update_schema: Схема для обновления записей
+        :param prefix: Префикс URL пути
+        :param tags: Теги для документации Swagger
+        :param record_type_id: Идентификатор типа записи для фильтрации
+        :param get_all_route: Флаг создания эндпоинта для получения всех записей
+        :param create_route: Флаг создания эндпоинта для создания записи
+        :param update_route: Флаг создания эндпоинта для обновления
+        :param delete_route: Флаг создания эндпоинта для удаления
+        :param custom_dependencies: Кастомные зависимости для маршрутов
+        :param custom_responses: Кастомные HTTP ответы
+        :param description: Описание для документации
+        """
         self.router = APIRouter(prefix=prefix, tags=tags or [])
         self.model = model
         self.schema = schema
@@ -52,6 +71,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         )
 
     def _generate_update_schema(self) -> Type[BaseModel]:
+        """Генерация схемы для обновления с необязательными полями"""
         fields = {}
         for name, field_info in self.create_schema.__annotations__.items():
             if name not in ["id", "created_at", "updated_at"]:
@@ -62,6 +82,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         )
 
     def _setup_dependencies(self, custom_deps: Dict = None) -> Dict:
+        """Инициализация зависимостей для маршрутов"""
         deps = {
             "get_all": [],
             "get_one": [],
@@ -78,6 +99,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         return deps
 
     def _setup_responses(self, custom_responses: Dict = None) -> Dict:
+        """Настройка HTTP ответов для документации"""
         responses = {
             "get_all": {404: {"description": "Элементы не найдены"}},
             "get_one": {404: {"description": "Элемент не найден"}},
@@ -104,6 +126,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         delete: bool,
         description: str,
     ):
+        """Создание стандартных CRUD маршрутов"""
         model_name = description or self.model.__name__
 
         if get_all:
@@ -157,8 +180,9 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
             )
 
     def get_filters(self, current_user: User) -> List:
+        """Формирование базовых фильтров для запросов"""
         filters = []
-
+        # Фильтр по типу записи (для разделения расходов/доходов)
         if self.record_type_id is not None:
             filters.append(self.model.record_type_id == self.record_type_id)
 
@@ -168,6 +192,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         return filters
 
     def get_kwargs(self, current_user: User) -> Dict[str, Any]:
+        """Получение дополнительных параметров для создания записи"""
         kwargs = {}
 
         if hasattr(self.model, "user_id"):
@@ -187,6 +212,17 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         selectload_list: List = [],
         no_limit: bool = False
     ) -> List[ModelType]:
+        """
+        Базовый метод для получения записей из БД с фильтрацией и пагинацией.
+        
+        :param session: Асинхронная сессия SQLAlchemy
+        :param filters: Список фильтров SQLAlchemy
+        :param limit: Максимальное количество записей (по умолчанию 100)
+        :param skip: Смещение в выборке (для пагинации)
+        :param selectload_list: Список отношений для eager loading
+        :param no_limit: Флаг отключения лимита выборки
+        :return: Список объектов модели
+        """
         return await select_data(
             session,
             self.model,
@@ -205,6 +241,15 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         names: List = None,
         exclude: list = [],
     ) -> ModelType:
+        """
+        Базовый метод создания записи с обработкой связей.
+        
+        :param data: Валидированные данные из схемы создания
+        :param kwargs: Дополнительные параметры для модели
+        :param names: Список имен отношений для обработки
+        :param exclude: Поля для исключения при создании
+        :return: Созданный объект модели
+        """
         db_item = self.model(**data.model_dump(exclude=[*exclude]), **kwargs)
         await upload_data(session, db_item, names or [])
         return db_item
@@ -216,6 +261,13 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         data: UpdateSchemaType,
         item_id: UUID,
     ):
+        """
+        Базовый метод обновления записи с проверкой прав доступа.
+        
+        :param data: Частичные данные для обновления
+        :param item_id: UUID обновляемой записи
+        :return: Обновленный объект модели
+        """
         filters = self.get_filters(current_user)
         filters.append(self.model.id == item_id)
 
@@ -226,6 +278,12 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
     async def delete_base(
         self, session: AsyncSession, current_user: User, item_id: UUID
     ) -> bool:
+        """
+        Базовый метод удаления записи с проверкой прав доступа.
+        
+        :param item_id: UUID удаляемой записи
+        :return: Флаг успешного удаления
+        """
         filters = self.get_filters(current_user)
         filters.append(self.model.id == item_id)
 
@@ -240,26 +298,18 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         ),
         skip: int = Query(0, ge=0, description="Смещение от начала выборки"),
     ) -> List[SchemaType]:
+        """
+        Обработчик GET-запроса для получения списка записей.
+        
+        :param limit: Лимит записей (1-100)
+        :param skip: Смещение для пагинации
+        :return: Список DTO объектов
+        """
         filters = self.get_filters(current_user)
 
         items = await self.get_base(session, filters=filters, limit=limit, skip=skip)
 
         return [item.to_dto() for item in items]
-
-    def _parse_order_by(self, order_by: Optional[str]) -> List:
-        order_list = []
-        if order_by:
-            for field in order_by.split(","):
-                field = field.strip()
-                if not field:
-                    continue
-
-                if field.startswith("-") and hasattr(self.model, field[1:]):
-                    order_list.append(getattr(self.model, field[1:]).desc())
-                elif hasattr(self.model, field):
-                    order_list.append(getattr(self.model, field).asc())
-
-        return order_list
 
     async def get_one(
         self,
@@ -267,6 +317,12 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user()),
     ) -> SchemaType:
+        """
+        Обработчик GET-запроса для получения одной записи.
+        
+        :param item_id: UUID записи
+        :return: DTO объект
+        """
         filters = self.get_filters(current_user)
         filters.append(self.model.id == item_id)
 
@@ -282,6 +338,12 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user()),
     ) -> SchemaType:
+        """
+        Обработчик POST-запроса для создания записи.
+        
+        :param data: Тело запроса в формате JSON
+        :return: Созданный DTO объект
+        """
         try:
             data = self.update_schema.model_validate(data)
             db_item = await self.create_base(
@@ -299,6 +361,13 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user()),
     ) -> SchemaType:
+        """
+        Обработчик PATCH-запроса для обновления записи.
+        
+        :param item_id: UUID обновляемой записи
+        :param data: Частичные данные для обновления
+        :return: Обновленный DTO объект
+        """
         data = self.update_schema.model_validate(data)
         updated_item = await self.update_base(session, current_user, data, item_id)
         if not updated_item:
@@ -312,5 +381,11 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user()),
     ) -> None:
+        """
+        Обработчик DELETE-запроса для удаления записи.
+        
+        :param item_id: UUID удаляемой записи
+        :return: HTTP 204 No Content при успехе
+        """
         if not await self.delete_base(session, current_user, item_id):
             raise HTTPException(404, detail="Item not found")

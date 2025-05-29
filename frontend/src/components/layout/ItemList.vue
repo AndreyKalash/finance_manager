@@ -1,21 +1,28 @@
+<!-- ItemList.vue -->
 <template>
   <div class="item-list">
     <h3 class="title primary">{{ title }}</h3>
+    <!-- Контейнер формы добавления с выпадающим списком -->
     <div class="add-form">
+      <!-- Кастомный выпадающий список с возможностью редактирования -->
       <AppDropdown ref="dropdownRef" :items="filteredItems" :show-color="showColor" :placeholder="placeholder"
         :name-key="nameKey" :self-close="false" :color-key="colorKey" v-model="newName">
         <template #item="{ item }">
           <li class="option-item">
+            <!-- Режим редактирования элемента -->
             <template v-if="editingId === item.id">
               <div class="edit-wrapper" ref="editWrapperRef">
+                <!-- Компонент выбора цвета с остановкой всплытия событий -->
                 <ColorPicker v-if="!showDefaultValue" @click.stop v-model:pureColor="editColor" picker-type="chrome"
                   disable-alpha class="color-badge color-picker-inline" :style="{ backgroundColor: editColor }"
                   inline />
+                <!-- Поле ввода имени с автифокусом и обработкой Enter -->
                 <input @click.stop v-model="editName" class="edit-input" :placeholder="placeholder"
                   @keyup.enter="saveEdit(item)" autofocus />
                 <input v-if="showDefaultValue" @click.stop v-model.number="editDefaultValue" class="number_input"
                   title="Значение по умолчанию" @keyup.enter="saveEdit(item)" type="number" min="1"
                   placeholder="Значение по умолчанию" />
+                <!-- Кнопки управления редактированием -->
                 <div class="list-actions">
                   <button class="save-btn" @click.stop="saveEdit(item)">
                     💾
@@ -35,6 +42,7 @@
                   ({{ item.default_value }})
                 </span>
               </div>
+              <!-- Кнопки действий для элемента -->
               <div class="item-actions">
                 <button class="edit-btn" @click.stop="startEdit(item)">
                   ✏️
@@ -47,11 +55,13 @@
           </li>
         </template>
       </AppDropdown>
-
+      <!-- Компонент выбора цвета для нового элемента -->
       <ColorPicker v-if="showColor" v-model:pureColor="newColor" picker-type="chrome" disable-alpha
         class="color-picker" />
-      <input v-if="showDefaultValue" v-model.number="newDefaultValue" class="number_input"
-        title="Значение по умолчанию" type="number" min="1" placeholder="Значение по умолчанию" />
+      <!-- Поле ввода значения по умолчанию для нового элемента -->
+      <input v-if="showDefaultValue" v-model.number="newDefaultValue" class="number_input" title="Значение по умолчанию"
+        type="number" min="1" placeholder="Значение по умолчанию" />
+      <!-- Кнопка добавления нового элемента -->
       <button class="add-btn" @click="handleAdd">Добавить</button>
     </div>
   </div>
@@ -90,14 +100,14 @@ const editColor = ref("#3ddac9");
 
 const newDefaultValue = ref(1);
 const editDefaultValue = ref(1);
-
+// Сброс формы добавления
 function resetForm() {
   newName.value = "";
   newColor.value = "#3ddac9";
   newDefaultValue.value = 1;
   dropdownRef.value?.closeDropdown();
 }
-
+// Фильтрация элементов по введенному тексту
 const filterOptions = () => {
   if (!newName.value) {
     filteredItems.value = props.items;
@@ -111,14 +121,14 @@ const filterOptions = () => {
     );
   }
 };
-
+// Начало редактирования элемента
 const startEdit = async (item) => {
   editingId.value = item.id;
   editName.value = item[props.nameKey];
   editColor.value = item[props.colorKey] || "#3ddac9";
   editDefaultValue.value = item.default_value ?? 1;
 };
-
+// Сохранение изменений элемента
 const saveEdit = (item) => {
   emit("edit", props.itemType, {
     ...item,
@@ -128,11 +138,11 @@ const saveEdit = (item) => {
   });
   cancelEdit();
 };
-
+// Отмена редактирования
 const cancelEdit = () => {
   editingId.value = null;
 };
-
+// Конвертация RGB в HEX формат
 function rgbToHex(rgb) {
   if (!rgb.startsWith("rgb")) return rgb;
   const nums = rgb.match(/\d+/g);
@@ -145,7 +155,7 @@ function rgbToHex(rgb) {
       .toLowerCase()
   );
 }
-
+// Обработка добавления нового элемента
 const handleAdd = () => {
   if (!newName.value.trim()) return;
 
@@ -169,7 +179,7 @@ const handleAdd = () => {
   resetForm();
   dropdownRef.value.searchQuery = '';
 };
-
+// Обработчик клика вне области компонента
 const handleClickOutside = (event) => {
   const dropdownEl = dropdownRef.value?.$el || dropdownRef.value;
   const editEl = editWrapperRef?.value;

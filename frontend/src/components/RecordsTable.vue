@@ -1,17 +1,19 @@
+<!-- RecordsTable.vue -->
 <template>
   <div class="table_view">
+    <!-- Блок переключения между типами записей -->
     <div class="tabs">
       <button v-for="type in types" :key="type.value" :class="['tab-btn', { active: currentType === type.value }]"
         @click="changeType(type.value)">
         {{ type.label }}
       </button>
     </div>
-
+    <!-- Поисковая строка с иконкой -->
     <div class="search" v-if="showSearch">
       <i class="fa-solid fa-magnifying-glass secondary"></i>
       <input type="search" v-model="searchQuery" placeholder="Поиск по таблице" id="records_search" />
     </div>
-
+    <!-- Контейнер таблицы-->
     <div class="table_container" @mouseenter="onTableMouseEnter" @mouseleave="onTableMouseLeave">
       <table class="records_table">
         <thead>
@@ -70,7 +72,7 @@
         </tbody>
       </table>
     </div>
-
+    <!-- Модальное окно редактирования/создания -->
     <RecordFormModal v-model="formModalVisible" :record-to-edit="editingRecord" :categories="categories" :tags="tags"
       :units="units" :type="currentType" @create="createRecord" @update="updateRecord" />
   </div>
