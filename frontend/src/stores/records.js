@@ -6,7 +6,7 @@ export const useRecordsStore = defineStore("records", {
   state: () => ({
     records: {
       [RTYPES.expense]: [],
-      [RTYPES.income]: []
+      [RTYPES.income]: [],
     },
     loading: false,
     error: null,
@@ -14,7 +14,7 @@ export const useRecordsStore = defineStore("records", {
   getters: {
     hasRecords: (state) =>
       state.records[RTYPES.expense].length > 0 &&
-      state.records[RTYPES.income].length > 0
+      state.records[RTYPES.income].length > 0,
   },
 
   actions: {
@@ -23,15 +23,22 @@ export const useRecordsStore = defineStore("records", {
       this.loading = true;
       this.error = null;
       try {
-          if (force || this.records[RTYPES.expense].length == 0) {
-            const expenseResponse = await RecordsAPI.getRecords(RTYPES.expense, limit, skip);
-            this.records[RTYPES.expense] = expenseResponse.data;
-          }
-          if (force || this.records[RTYPES.income].length == 0) {
-            const incomeResponse = await RecordsAPI.getRecords(RTYPES.income, limit, skip);
-            this.records[RTYPES.income] = incomeResponse.data;
-          }
-      
+        if (force || this.records[RTYPES.expense].length == 0) {
+          const expenseResponse = await RecordsAPI.getRecords(
+            RTYPES.expense,
+            limit,
+            skip
+          );
+          this.records[RTYPES.expense] = expenseResponse.data;
+        }
+        if (force || this.records[RTYPES.income].length == 0) {
+          const incomeResponse = await RecordsAPI.getRecords(
+            RTYPES.income,
+            limit,
+            skip
+          );
+          this.records[RTYPES.income] = incomeResponse.data;
+        }
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки записей";
       } finally {
@@ -68,5 +75,32 @@ export const useRecordsStore = defineStore("records", {
         this.error = error.response?.data?.detail || "Ошибка удаления записи";
       }
     },
+    async exportRecords(type, extension) {
+      this.error = null;
+      try {
+        const response = await RecordsAPI.exportRecords(type, extension);
+        console.log(response);
+        
+        
+        const blob = new Blob([response.data], { type: response.headers['content-type'] });
+        const url = window.URL.createObjectURL(blob);
+        
+        const contentDisposition = response.headers['content-disposition'];
+        const fileNameMatch = contentDisposition.match(/filename="?(.+?)"?(;|$)/);
+        const fileName = fileNameMatch ? fileNameMatch[1] : `data.${extension}`;
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        
+      } catch (error) {
+        this.error = error.response?.data?.detail || "Ошибка при экспорте данных";
+      }
+    }
   },
 });

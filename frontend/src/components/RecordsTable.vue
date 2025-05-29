@@ -1,24 +1,15 @@
 <template>
   <div class="table_view">
     <div class="tabs">
-      <button
-        v-for="type in types"
-        :key="type.value"
-        :class="['tab-btn', { active: currentType === type.value }]"
-        @click="changeType(type.value)"
-      >
+      <button v-for="type in types" :key="type.value" :class="['tab-btn', { active: currentType === type.value }]"
+        @click="changeType(type.value)">
         {{ type.label }}
       </button>
     </div>
 
     <div class="search" v-if="showSearch">
       <i class="fa-solid fa-magnifying-glass secondary"></i>
-      <input
-        type="search"
-        v-model="searchQuery"
-        placeholder="Поиск по таблице"
-        id="records_search"
-      />
+      <input type="search" v-model="searchQuery" placeholder="Поиск по таблице" id="records_search" />
     </div>
 
     <div class="table_container" @mouseenter="onTableMouseEnter" @mouseleave="onTableMouseLeave">
@@ -80,16 +71,8 @@
       </table>
     </div>
 
-    <RecordFormModal
-      v-model="formModalVisible"
-      :record-to-edit="editingRecord"
-      :categories="categories"
-      :tags="tags"
-      :units="units"
-      :type="currentType"
-      @create="createRecord"
-      @update="updateRecord"
-    />
+    <RecordFormModal v-model="formModalVisible" :record-to-edit="editingRecord" :categories="categories" :tags="tags"
+      :units="units" :type="currentType" @create="createRecord" @update="updateRecord" />
   </div>
 </template>
 
@@ -107,15 +90,15 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   showSearch: { type: Boolean, default: false },
   fetchCharts: { type: Boolean, default: false },
-  modelValue: {type: String, default: RTYPES.expense},
+  modelValue: { type: String, default: RTYPES.expense },
   headers: { type: Array, required: false }
 });
 
 const headers = computed(() => {
-  const typedHeaders = currentType.value === RTYPES.expense 
+  const typedHeaders = currentType.value === RTYPES.expense
     ? ["Цена товара", "Единица измерения", "Количество единицы измерения", "Количество товара"]
     : ["Сумма"]
-  
+
   return [
     "Дата",
     "Название",
@@ -192,8 +175,6 @@ async function createRecord(type, record) {
 }
 
 async function updateRecord(type, record) {
-  console.log(type, record);
-  
   await recordsStore.updateRecord(type, record);
   formModalVisible.value = false;
   editingRecord.value = null;
@@ -229,11 +210,11 @@ defineExpose({ showFormModal });
 </script>
 
 <style scoped>
-
 .tabs {
   display: flex;
   gap: 10px;
 }
+
 .tab-btn {
   padding: 8px 22px;
   border: none;
@@ -245,15 +226,18 @@ defineExpose({ showFormModal });
   font-weight: 500;
   transition: background 0.2s;
 }
+
 .tab-btn.active {
   background: #03dac6;
   color: #232323;
   font-weight: bold;
   box-shadow: 0 -2px 8px #03dac655;
 }
+
 .tab-btn:not(.active):hover {
   background: #333;
 }
+
 .table_view {
   display: flex;
   flex-direction: column;

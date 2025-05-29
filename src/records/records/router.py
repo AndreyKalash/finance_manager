@@ -1,7 +1,8 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +11,7 @@ from src.database.core.db import get_async_session
 from src.database.crud import select_data
 from src.models import Record, User, Tag
 
+from .reports import generate_csv, generate_excel, generate_filename, generate_pdf
 from src.routers.base import BaseRouter
 from src.schemas import (
     ExpenseRecordDTO,
@@ -30,6 +32,12 @@ class RecordRouter(BaseRouter):
             tags=["records"],
             record_type_id=record_type_id,
         )
+        self.router.add_api_route(
+            '/export/',
+            self.export_records,
+            methods=["GET"],
+            response_class=StreamingResponse
+            )
 
     async def create_record(
         self, session: AsyncSession, data: BaseModel, current_user: User
@@ -90,6 +98,40 @@ class RecordRouter(BaseRouter):
         except Exception as e:
             await session.rollback()
             raise HTTPException(400, detail=str(e))
+        
+    async def export_records(
+        self,
+        extension: Annotated[str, Query()],
+        session: AsyncSession = Depends(get_async_session),
+        current_user: User = Depends(fastapi_auth.current_user())
+    ):
+        filters = self.get_filters(current_user)
+        items = await self.get_base(session, filters, no_limit=True)
+        data = [item.to_dto().model_dump() for item in items]
+        file_generators = {
+            'csv': (generate_csv, 'text/csv', 'data.csv'),
+            'xlsx': (generate_excel, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'data.xlsx'),
+            'pdf': (generate_pdf, 'application/pdf', 'data.pdf')
+        }
+
+        if extension not in file_generators:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+
+        generator, media_type, filename = file_generators[extension]
+        
+        try:
+            buffer = await generator(data, self.record_type_id)
+            filename = generate_filename(extension)
+            return StreamingResponse(
+                buffer,
+                media_type=media_type,
+                headers={
+                    'Content-Disposition': f'attachment; filename="{filename}"',
+                    'Access-Control-Expose-Headers': 'Content-Disposition'
+                }
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 records_router = APIRouter(

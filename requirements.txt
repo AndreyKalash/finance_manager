@@ -10,3 +10,4 @@ flower
 pytest-asyncio
 starlette
 pydantic
+reportlab

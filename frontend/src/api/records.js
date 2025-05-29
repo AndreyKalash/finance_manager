@@ -8,7 +8,7 @@ const incomePath = "income_records/"
 export const RecordsAPI = {
   async getRecords(type, limit, skip) {
     const fullPath = pathBilder(type, path, expensePath, incomePath);
-    return api.get(fullPath, { limit, skip });
+    return api.get(fullPath, { params: { limit, skip } });
   },
   async createRecord(type, record) {
     const fullPath = pathBilder(type, path, expensePath, incomePath);
@@ -21,5 +21,9 @@ export const RecordsAPI = {
   async deleteRecord(type, id) {
     const fullPath = pathBilder(type, path, expensePath, incomePath);
     return api.delete(fullPath + id);
+  },
+  async exportRecords(type, extension) {
+    const fullPath = pathBilder(type, path, expensePath, incomePath);
+    return api.get(fullPath + 'export/', { params: { extension }, responseType: 'blob'});
   },
 };

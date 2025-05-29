@@ -25,7 +25,6 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         tags: List[str] = None,
         record_type_id: Optional[int] = None,
         get_all_route: bool = True,
-        get_one_route: bool = True,
         create_route: bool = True,
         update_route: bool = True,
         delete_route: bool = True,
@@ -46,7 +45,6 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
 
         self._setup_routes(
             get_all_route,
-            get_one_route,
             create_route,
             update_route,
             delete_route,
@@ -101,7 +99,6 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
     def _setup_routes(
         self,
         get_all: bool,
-        get_one: bool,
         create: bool,
         update: bool,
         delete: bool,
@@ -119,18 +116,6 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
                 responses=self.responses["get_all"],
                 summary=f"Получить все записи {model_name}",
                 description=f"Получить список всех {model_name} с пагинацией и фильтрацией",
-            )
-
-        if get_one:
-            self.router.add_api_route(
-                "/{item_id}",
-                self.get_one,
-                methods=["GET"],
-                response_model=self.schema,
-                dependencies=self.dependencies["get_one"],
-                responses=self.responses["get_one"],
-                summary=f"Получить {model_name} по ID",
-                description=f"Получить конкретный {model_name} по ID",
             )
 
         if create:
@@ -200,6 +185,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         limit: int = 100,
         skip: int = 0,
         selectload_list: List = [],
+        no_limit: bool = False
     ) -> List[ModelType]:
         return await select_data(
             session,
@@ -208,6 +194,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
             limit=limit,
             skip=skip,
             selectload=selectload_list,
+            no_limit=no_limit
         )
 
     async def create_base(

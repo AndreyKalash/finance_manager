@@ -13,11 +13,14 @@ async def select_data(
     limit: int = 1000,
     skip: int = 0,
     selectload: list = [],
+    no_limit: bool = False
 ):
     load_options = [selectinload(rel) for rel in selectload]
     query = (
-        select(model).where(*filters).limit(limit).offset(skip).options(*load_options)
+        select(model).where(*filters).limit(limit).options(*load_options)
     )
+    if not no_limit:
+        query = query.offset(skip)
     if hasattr(model, "created_at"):
         query = query.order_by(model.created_at)
 
