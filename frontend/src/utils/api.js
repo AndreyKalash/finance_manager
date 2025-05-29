@@ -1,9 +1,5 @@
-import { RTYPES } from "./recordTypes"
+import { RTYPES } from "./recordTypes";
 
 export const pathBilder = (type, path, expensePath, incomePath) => {
-  return path + (
-      type == RTYPES.expense ?
-      expensePath :
-      incomePath
-    )
-} 
+  return path + (type == RTYPES.expense ? expensePath : incomePath);
+};

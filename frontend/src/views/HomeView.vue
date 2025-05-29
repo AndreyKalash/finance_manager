@@ -3,34 +3,27 @@
     <section class="records_chart_items">
       <div class="records_chart container">
         <div class="chart_container">
-          <button
-            class="nav_button left"
-            @click="prevMonth"
-            aria-label="Предыдущий месяц"
-          >
+          <button class="nav_button left" @click="prevMonth" aria-label="Предыдущий месяц">
             <font-awesome-icon :icon="['fas', 'chevron-left']" />
           </button>
           <div class="center_content">
-            <h2 class="title primary">{{ currentType == RTYPES.expense ? 'Траты' : 'Доходы' }} за {{ currentMonth }}</h2>
+            <h2 class="title primary">{{ currentType == RTYPES.expense ? 'Траты' : 'Доходы' }} за {{ currentMonth }}
+            </h2>
             <p v-if="!sumChartData.labels.length">Нет данных</p>
             <AppChart v-else :chartData="sumChartData" :unit-symbol="'₽'" />
           </div>
         </div>
       </div>
-      
+
       <div class="records_chart container">
         <div class="chart_container">
           <div class="center_content">
-            <h2 class="title primary">Количество {{ currentType == RTYPES.expense ? 'трат' : 'доходов'  }} за {{ currentMonth }}</h2>
+            <h2 class="title primary">Количество {{ currentType == RTYPES.expense ? 'трат' : 'доходов' }} за {{
+              currentMonth }}</h2>
             <p v-if="!countChartData.labels.length">Нет данных</p>
             <AppChart v-else :chartData="countChartData" :unit-symbol="'шт.'" />
           </div>
-          <button
-            class="nav_button right"
-            :disabled="isCurrentMonth"
-            @click="nextMonth"
-            aria-label="Следующий месяц"
-          >
+          <button class="nav_button right" :disabled="isCurrentMonth" @click="nextMonth" aria-label="Следующий месяц">
             <font-awesome-icon :icon="['fas', 'chevron-right']" />
           </button>
         </div>
@@ -39,20 +32,12 @@
 
     <section class="records container">
       <div class="table_view">
-        <router-link
-          to="/records"
-          class="secondary"
-          title="Перейти на страницу записей"
-        >
+        <router-link to="/records" class="secondary" title="Перейти на страницу записей">
           <h2 class="title primary">Таблица записей</h2>
         </router-link>
 
-        <RecordsTable
-          :items="recentRecords"
-          :fetch-charts="true"
-          :v-model="currentType"
-          @update:modelValue="handleTypeChange"
-        />
+        <RecordsTable :items="recentRecords" :fetch-charts="true" :v-model="currentType"
+          @update:modelValue="handleTypeChange" />
       </div>
     </section>
   </main>

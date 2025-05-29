@@ -4,48 +4,21 @@
       <h3>{{ isEditing ? "Редактировать" : "Добавить" }} запись</h3>
       <form @submit.prevent="submitForm">
         <label for="record-date">Дата</label>
-        <input
-          id="record-date"
-          v-model="formData.record_date"
-          type="date"
-          required
-        />
+        <input id="record-date" v-model="formData.record_date" type="date" required />
 
         <label for="record-name">Название</label>
-        <input
-          id="record-name"
-          v-model="formData.name"
-          type="text"
-          placeholder="Название"
-          required
-        />
+        <input id="record-name" v-model="formData.name" type="text" placeholder="Название" required />
 
         <label for="record-amount">{{
           type == RTYPES.expense ? "Цена" : "Cумма"
         }}</label>
-        <input
-          id="record-amount"
-          v-model.number="formData.amount"
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="Цена"
-          required
-          />
-          
+        <input id="record-amount" v-model.number="formData.amount" type="number" step="0.01" min="0.01"
+          placeholder="Цена" required />
+
         <template v-if="type == RTYPES.expense">
           <label for="record-unit">Единица измерения</label>
-          <AppDropdown
-          class="dropdown"
-          ref="unitDropdown"
-            placeholder="Выберите единицу"
-            name-key="name"
-            v-model="formData.unit_id"
-            :show-color="false"
-            :items="units"
-            :search="true"
-            @select="handleUnitSelect"
-          >
+          <AppDropdown class="dropdown" ref="unitDropdown" placeholder="Выберите единицу" name-key="name"
+            v-model="formData.unit_id" :show-color="false" :items="units" :search="true" @select="handleUnitSelect">
             <template #item="{ item }">
               <div>
                 <span>{{ item.name }}</span>
@@ -55,53 +28,27 @@
           </AppDropdown>
 
           <label for="record-unit-quantity">Количество единиц измерения</label>
-          <input
-            id="record-unit-quantity"
-            v-model.number="formData.unit_quantity"
-            type="number"
-            min="1"
-            placeholder="Кол-во ед."
-          />
+          <input id="record-unit-quantity" v-model.number="formData.unit_quantity" type="number" min="1"
+            placeholder="Кол-во ед." />
 
           <label for="record-product-quantity">Количество товара</label>
-          <input
-            id="record-product-quantity"
-            v-model.number="formData.product_quantity"
-            type="number"
-            min="1"
-            placeholder="Кол-во товара"
-          />
+          <input id="record-product-quantity" v-model.number="formData.product_quantity" type="number" min="1"
+            placeholder="Кол-во товара" />
         </template>
 
         <label>Категория</label>
-        <AppDropdown
-          ref="categoryDropdown"
-          @select="handleCategorySelect"
-          v-model="formData.category_id"
-          :show-color="true"
-          :items="categories"
-          placeholder="Выберите категорию"
-          name-key="name"
-          :search="true"
-          class="dropdown"
-        >
+        <AppDropdown ref="categoryDropdown" @select="handleCategorySelect" v-model="formData.category_id"
+          :show-color="true" :items="categories" placeholder="Выберите категорию" name-key="name" :search="true"
+          class="dropdown">
         </AppDropdown>
 
         <template v-if="tags.length">
           <label>Теги</label>
           <div class="tags-container">
             <div class="tags-list">
-              <div
-                v-for="tag in tags"
-                :key="tag.id"
-                class="tag-option"
-                :class="{ selected: formData.tags.includes(tag.id) }"
-                @click="toggleTag(tag.id)"
-              >
-                <div
-                  class="color-box"
-                  :style="{ backgroundColor: tag.color }"
-                ></div>
+              <div v-for="tag in tags" :key="tag.id" class="tag-option"
+                :class="{ selected: formData.tags.includes(tag.id) }" @click="toggleTag(tag.id)">
+                <div class="color-box" :style="{ backgroundColor: tag.color }"></div>
                 <span>{{ tag.name }}</span>
               </div>
             </div>
@@ -112,11 +59,7 @@
           <button type="submit" class="add_row_btn">
             {{ isEditing ? "Сохранить" : "Добавить" }}
           </button>
-          <button
-            type="button"
-            class="add_row_btn"
-            @click="$emit('update:modelValue', false)"
-          >
+          <button type="button" class="add_row_btn" @click="$emit('update:modelValue', false)">
             Отмена
           </button>
         </div>
@@ -162,7 +105,7 @@ function getEmptyRecord() {
 
 const isEditing = computed(() => !!props.recordToEdit);
 
-const handleUnitSelect = (unit) => {  
+const handleUnitSelect = (unit) => {
   formData.value.unit_id = unit.id;
   formData.value.unit_quantity = unit.default_value;
   unitDropdown.value.closeDropdown();

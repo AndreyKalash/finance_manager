@@ -6,13 +6,13 @@ export const useTagsStore = defineStore("tags", {
   state: () => ({
     tags: {
       [RTYPES.expense]: [],
-      [RTYPES.income]: []
+      [RTYPES.income]: [],
     },
     loading: false,
     error: null,
   }),
   actions: {
-    async fetchTags(force=false) {
+    async fetchTags(force = false) {
       this.loading = true;
       this.error = null;
       try {

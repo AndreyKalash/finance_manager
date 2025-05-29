@@ -24,66 +24,29 @@
     <div class="settings container">
       <h1 class="primary title">Списки</h1>
       <div class="crud-flex-row">
-        <ItemList
-          title="Категории трат"
-          :items="expenseCategories"
-          placeholder="Новая категория"
-          :showColor="true"
-          :item-type="RTYPES.expense"
-          @add="handleAddCategory"
-          @edit="handleEditCategory"
-          @delete="handleDeleteCategory"
-          />
-          
-          <ItemList
-          title="Категории доходов"
-          :items="incomeCategories"
-          placeholder="Новая категория"
-          :showColor="true"
-          :item-type="RTYPES.income"
-          @add="handleAddCategory"
-          @edit="handleEditCategory"
-          @delete="handleDeleteCategory"
-        />
+        <ItemList title="Категории трат" :items="expenseCategories" placeholder="Новая категория" :showColor="true"
+          :item-type="RTYPES.expense" @add="handleAddCategory" @edit="handleEditCategory"
+          @delete="handleDeleteCategory" />
 
-        <ItemList
-          title="Теги трат"
-          :items="expenseTags"
-          placeholder="Новый тег"
-          :showColor="true"
-          :item-type="RTYPES.expense"
-          @add="handleAddTag"
-          @edit="handleEditTag"
-          @delete="handleDeleteTag"
-        />
+        <ItemList title="Категории доходов" :items="incomeCategories" placeholder="Новая категория" :showColor="true"
+          :item-type="RTYPES.income" @add="handleAddCategory" @edit="handleEditCategory"
+          @delete="handleDeleteCategory" />
 
-        <ItemList
-          title="Теги доходов"
-          :items="incomeTags"
-          placeholder="Новый тег"
-          :showColor="true"
-          :item-type="RTYPES.income"
-          @add="handleAddTag"
-          @edit="handleEditTag"
-          @delete="handleDeleteTag"
-        />
+        <ItemList title="Теги трат" :items="expenseTags" placeholder="Новый тег" :showColor="true"
+          :item-type="RTYPES.expense" @add="handleAddTag" @edit="handleEditTag" @delete="handleDeleteTag" />
 
-        <ItemList
-          title="Единицы измерения"
-          :items="units"
-          placeholder="Новая единица"
-          :showDefaultValue="true"
-          @add="handleAddUnit"
-          @edit="handleEditUnit"
-          @delete="handleDeleteUnit"
-        />
+        <ItemList title="Теги доходов" :items="incomeTags" placeholder="Новый тег" :showColor="true"
+          :item-type="RTYPES.income" @add="handleAddTag" @edit="handleEditTag" @delete="handleDeleteTag" />
+
+        <ItemList title="Единицы измерения" :items="units" placeholder="Новая единица" :showDefaultValue="true"
+          @add="handleAddUnit" @edit="handleEditUnit" @delete="handleDeleteUnit" />
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted} from "vue";
+import { ref, computed, onMounted } from "vue";
 import { RTYPES } from "@/utils/recordTypes";
 import { useCategoriesStore } from "@/stores/categories";
 import { useTagsStore } from "@/stores/tags";
@@ -111,7 +74,6 @@ const handleEditCategory = async (type, category) => {
 
 const handleDeleteCategory = async (type, id) => {
   if (!confirm("Удалить категорию?")) return;
-  console.log(type, id);
   await categoriesStore.deleteCategory(type, id);
 };
 
@@ -119,7 +81,7 @@ const handleAddTag = async (type, tag) => {
   await tagsStore.createTag(type, tag);
 };
 
-const handleEditTag = async (type, tag) => {  
+const handleEditTag = async (type, tag) => {
   await tagsStore.updateTag(type, tag);
 };
 
