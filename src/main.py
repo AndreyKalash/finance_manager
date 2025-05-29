@@ -1,13 +1,9 @@
-import logging
-
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.staticfiles import StaticFiles
 
 import src.routers as ar
 
-logging.basicConfig(level=logging.DEBUG)
 app = FastAPI()
 
 origins = [

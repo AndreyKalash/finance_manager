@@ -1,8 +1,11 @@
+<!-- AuthForm.vue -->
 <template>
   <section class="auth_section">
     <div class="container">
       <div class="auth_content">
+        <!-- Динамическое изменение заголовка в зависимости от режима -->
         <p class="title primary">{{ isLoginMode ? "Вход" : "Регистрация" }}</p>
+        <!-- Предотвращение стандартной отправки формы и вызов кастомного обработчика -->
         <form @submit.prevent="handleSubmit">
           <input
             v-model="formData.email"
@@ -12,6 +15,7 @@
             @input="clearError('email')"
             />
           <span class="error">{{ errors.email }}</span>
+          <!-- Условный рендеринг поля username только для регистрации -->
           <input
             v-if="!isLoginMode"
             v-model="formData.username"
@@ -29,6 +33,7 @@
             @input="clearError('password')"
           />
           <span class="error">{{ errors.password }}</span>
+          <!-- Поле подтверждения пароля отображается только при регистрации -->
           <input
             v-if="!isLoginMode"
             v-model="formData.confirmPassword"
@@ -38,12 +43,14 @@
             @input="clearError('confirmPassword')"
           />
           <span class="error">{{ errors.confirmPassword }}</span>
+          <!-- Динамический текст кнопки в зависимости от режима -->
           <button type="submit">
             {{ isLoginMode ? "Войти" : "Зарегистрироваться" }}
           </button>
         </form>
         <div class="form_switch">
           <p>{{ isLoginMode ? "Нет аккаунта?" : "Уже есть аккаунт?" }}</p>
+          <!-- Динамическая маршрутизация с изменением пути в зависимости от текущего режима -->
           <router-link
             :to="isLoginMode ? '/register' : '/login'"
             class="switch-link"
@@ -65,24 +72,25 @@ import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const route = useRoute();
+// Вычисляемое свойство для определения режима компонента на основе текущего маршрута
 const isLoginMode = computed(() => route.path === "/login");
 const errorMessage = ref("");
 const authStore = useAuthStore();
-
+// Реактивные данные формы с инициализацией пустыми значениями
 const formData = ref({
   email: "",
   username: "",
   password: "",
   confirmPassword: "",
 });
-
+// Отдельный объект для хранения ошибок валидации каждого поля
 const errors = ref({
   email: "",
   username: "",
   password: "",
   confirmPassword: "",
 });
-
+// Валидация email с использованием регулярного выражения
 const validateEmail = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!formData.value.email) {
@@ -96,7 +104,7 @@ const validateEmail = () => {
   errors.value.email = "";
   return true;
 };
-
+// Валидация пароля
 const validatePassword = () => {
   if (!formData.value.password) {
     errors.value.password = "Пароль обязателен";
@@ -109,7 +117,7 @@ const validatePassword = () => {
   errors.value.password = "";
   return true;
 };
-
+// Условная валидация username только для режима регистрации
 const validateUsername = () => {
   if (!isLoginMode.value) {
     if (!formData.value.username) {
@@ -124,7 +132,7 @@ const validateUsername = () => {
   errors.value.username = "";
   return true;
 };
-
+// Валидация совпадения паролей при регистрации
 const validateConfirmPassword = () => {
   if (!isLoginMode.value) {
     if (!formData.value.confirmPassword) {
@@ -139,13 +147,11 @@ const validateConfirmPassword = () => {
   errors.value.confirmPassword = "";
   return true;
 };
-
+// Последовательная валидация всех полей с сохранением состояния валидности
 const validateForm = () => {
   let isValid = true;
-  
   isValid = validateEmail() && isValid;
   isValid = validatePassword() && isValid;
-  
   if (!isLoginMode.value) {
     isValid = validateUsername() && isValid;
     isValid = validateConfirmPassword() && isValid;
@@ -153,12 +159,12 @@ const validateForm = () => {
   
   return isValid;
 };
-
+// Утилитарная функция для очистки ошибок при взаимодействии пользователя с полями
 const clearError = (field) => {
   errors.value[field] = "";
   errorMessage.value = "";
 };
-
+// Центральный обработчик отправки формы с условным выбором действия
 const handleSubmit = async () => {
   if (!validateForm()) return;
   if (isLoginMode.value) {
@@ -167,7 +173,7 @@ const handleSubmit = async () => {
     await handleRegister();
   }
 };
-
+// Обработчик входа
 const handleLogin = async () => {
   try {
     errorMessage.value = "";
@@ -184,7 +190,7 @@ const handleLogin = async () => {
     console.error("Login failed:", error);
   }
 };
-
+// Обработчик регистрации
 const handleRegister = async () => {
   if (formData.value.password !== formData.value.confirmPassword) {
     errorMessage.value = "Пароли не совпадают";

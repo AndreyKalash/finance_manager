@@ -1,3 +1,4 @@
+# router.py
 from typing import Annotated
 from uuid import UUID
 
@@ -23,6 +24,14 @@ from src.schemas import (
 
 class RecordRouter(BaseRouter):
     def __init__(self, prefix, record_type_id, schema, create_schema):
+        """
+        Инициализация роутера для работы с записями.
+        
+        :param prefix: префикс URL для маршрутов
+        :param record_type_id: тип записи (1 - расходы, 2 - доходы)
+        :param schema: схема для сериализации данных
+        :param create_schema: схема для валидации при создании
+        """
         super().__init__(
             model=Record,
             schema=schema,
@@ -32,6 +41,7 @@ class RecordRouter(BaseRouter):
             tags=["records"],
             record_type_id=record_type_id,
         )
+        # Добавление кастомного эндпоинта для экспорта
         self.router.add_api_route(
             '/export/',
             self.export_records,
@@ -42,6 +52,13 @@ class RecordRouter(BaseRouter):
     async def create_record(
         self, session: AsyncSession, data: BaseModel, current_user: User
     ):
+        """
+        Создание записи с привязкой тегов.
+        
+        :param session: асинхронная сессия БД
+        :param data: валидированные данные записи
+        :param current_user: текущий авторизованный пользователь
+        """
         tags = await select_data(session, Tag, filters=[Tag.id.in_(data.tags)])
         kwargs = self.get_kwargs(current_user)
         kwargs["tags"] = tags
@@ -52,6 +69,11 @@ class RecordRouter(BaseRouter):
     async def update_base(
         self, session: AsyncSession, current_user: User, data: BaseModel, item_id: UUID
     ):
+        """
+        Обновление записи с обработкой тегов.
+        
+        :param item_id: UUID обновляемой записи
+        """
         filters = self.get_filters(current_user)
         filters.append(self.model.id == item_id)
         record = await self.get_base(
@@ -60,18 +82,18 @@ class RecordRouter(BaseRouter):
         if not record:
             raise HTTPException(status_code=404, detail="Record not found")
         record = record[0]
-
+        # Обновление базовых полей
         update_data = data.model_dump(exclude={"tags"})
         for key, value in update_data.items():
             setattr(record, key, value)
-
+        # Логика обновления тегов (синхронизация множеств)
         if data.tags is not None:
             current_tags = {tag.id for tag in record.tags}
             new_tags = set(data.tags)
-
+            # Удаление отсутствующих тегов
             for tag_id in current_tags - new_tags:
                 record.tags = [tag for tag in record.tags if tag.id != tag_id]
-
+            # Добавление новых тегов
             existing_tag_ids = {tag.id for tag in record.tags}
             tags_to_add = [
                 tag
@@ -105,9 +127,17 @@ class RecordRouter(BaseRouter):
         session: AsyncSession = Depends(get_async_session),
         current_user: User = Depends(fastapi_auth.current_user())
     ):
+        """
+        Экспорт записей в указанном формате.
+        
+        :param extension: формат файла (csv/xlsx/pdf)
+        :return: StreamingResponse с файлом
+        """
         filters = self.get_filters(current_user)
         items = await self.get_base(session, filters, no_limit=True)
+        
         data = [item.to_dto().model_dump() for item in items]
+        # Маппинг генераторов файлов
         file_generators = {
             'csv': (generate_csv, 'text/csv', 'data.csv'),
             'xlsx': (generate_excel, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'data.xlsx'),
@@ -120,8 +150,10 @@ class RecordRouter(BaseRouter):
         generator, media_type, filename = file_generators[extension]
         
         try:
+            # Генерация файла в памяти
             buffer = await generator(data, self.record_type_id)
             filename = generate_filename(extension)
+            # Настройка streaming ответа
             return StreamingResponse(
                 buffer,
                 media_type=media_type,

@@ -1,6 +1,8 @@
+<!-- RecordFormModal.vue -->
 <template>
   <div class="modal" v-if="modelValue">
     <div class="modal-content">
+      <!-- Динамический заголовок в зависимости от режима редактирования -->
       <h3>{{ isEditing ? "Редактировать" : "Добавить" }} запись</h3>
       <form @submit.prevent="submitForm">
         <label for="record-date">Дата</label>
@@ -16,9 +18,11 @@
           placeholder="Цена" required />
 
         <template v-if="type == RTYPES.expense">
+          <!-- Выпадающий список единиц измерения с кастомным слотом -->
           <label for="record-unit">Единица измерения</label>
           <AppDropdown class="dropdown" ref="unitDropdown" placeholder="Выберите единицу" name-key="name"
             v-model="formData.unit_id" :show-color="false" :items="units" :search="true" @select="handleUnitSelect">
+            <!-- Кастомное отображение элементов списка с default_value -->
             <template #item="{ item }">
               <div>
                 <span>{{ item.name }}</span>
@@ -41,7 +45,7 @@
           :show-color="true" :items="categories" placeholder="Выберите категорию" name-key="name" :search="true"
           class="dropdown">
         </AppDropdown>
-
+        <!-- Теги с возможностью множественного выбора -->
         <template v-if="tags.length">
           <label>Теги</label>
           <div class="tags-container">
@@ -54,7 +58,7 @@
             </div>
           </div>
         </template>
-
+        <!-- Кнопки действий формы -->
         <div class="modal-actions">
           <button type="submit" class="add_row_btn">
             {{ isEditing ? "Сохранить" : "Добавить" }}
@@ -88,7 +92,7 @@ const formData = ref(getEmptyRecord());
 const isCategoryOpen = ref(false);
 const categoryDropdown = ref(null);
 const unitDropdown = ref(null);
-
+// Инициализация пустой записи
 function getEmptyRecord() {
   return {
     id: "",
@@ -102,21 +106,21 @@ function getEmptyRecord() {
     tags: [],
   };
 }
-
+// Определение режима редактирования
 const isEditing = computed(() => !!props.recordToEdit);
-
+// Обработчик выбора единицы измерения
 const handleUnitSelect = (unit) => {
   formData.value.unit_id = unit.id;
   formData.value.unit_quantity = unit.default_value;
   unitDropdown.value.closeDropdown();
 };
-
+// Обработчик выбора категории
 function handleCategorySelect(category) {
   formData.value.category_id = category.id;
   categoryDropdown.value.closeDropdown();
   isCategoryOpen.value = false;
 }
-
+// Переключение состояния тега
 function toggleTag(tagId) {
   const index = formData.value.tags.indexOf(tagId);
   if (index === -1) {
@@ -125,11 +129,11 @@ function toggleTag(tagId) {
     formData.value.tags.splice(index, 1);
   }
 }
-
+// Отправка формы
 function submitForm() {
   emit(isEditing.value ? "update" : "create", props.type, { ...formData.value });
 }
-
+// Обработчик клика вне области выпадающих списков
 const handleClickOutside = (event) => {
   if (!props.modelValue) return;
 
