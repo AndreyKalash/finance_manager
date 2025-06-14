@@ -32,6 +32,7 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         custom_dependencies: Dict[str, List[Depends]] = None,
         custom_responses: Dict[str, Dict[int, Dict[str, Any]]] = None,
         description: str = "",
+        order_by = None
     ):
         """
         Базовый роутер для CRUD операций.
@@ -58,6 +59,8 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
 
         self.create_schema = create_schema
         self.update_schema = update_schema
+        
+        self.order_by = order_by.desc() if order_by else self.model.created_at.desc()
 
         self.dependencies = self._setup_dependencies(custom_dependencies)
         self.responses = self._setup_responses(custom_responses)
@@ -230,7 +233,8 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
             limit=limit,
             skip=skip,
             selectload=selectload_list,
-            no_limit=no_limit
+            no_limit=no_limit,
+            order_by=self.order_by
         )
 
     async def create_base(
@@ -308,7 +312,6 @@ class BaseRouter(Generic[ModelType, SchemaType, CreateSchemaType, UpdateSchemaTy
         filters = self.get_filters(current_user)
 
         items = await self.get_base(session, filters=filters, limit=limit, skip=skip)
-
         return [item.to_dto() for item in items]
 
     async def get_one(

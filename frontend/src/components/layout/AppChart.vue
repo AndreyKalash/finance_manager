@@ -61,6 +61,11 @@ const mergedOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
+    legend: {
+      labels: {
+        color: 'white'
+      }
+    },
     tooltip: {
       callbacks: {
         label: (ctx) =>

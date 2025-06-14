@@ -32,11 +32,11 @@
           </AppDropdown>
 
           <label for="record-unit-quantity">Количество единиц измерения</label>
-          <input id="record-unit-quantity" v-model.number="formData.unit_quantity" type="number" min="1"
+          <input id="record-unit-quantity" v-model.number="formData.unit_quantity" type="number" step="0.01" min="0.01"
             placeholder="Кол-во ед." />
 
           <label for="record-product-quantity">Количество товара</label>
-          <input id="record-product-quantity" v-model.number="formData.product_quantity" type="number" min="1"
+          <input id="record-product-quantity" v-model.number="formData.product_quantity" type="number" step="0.01" min="0.01"
             placeholder="Кол-во товара" />
         </template>
 
@@ -98,8 +98,8 @@ function getEmptyRecord() {
     id: "",
     record_date: new Date().toISOString().split("T")[0],
     name: "",
-    amount: 1,
-    unit_quantity: 1,
+    amount: 1.0,
+    unit_quantity: 1.0,
     product_quantity: 1,
     unit_id: null,
     category_id: '',
@@ -167,8 +167,8 @@ watch(
         id: newVal.id || "",
         record_date: newVal.record_date,
         name: newVal.name,
-        amount: Number(newVal.amount),
-        unit_quantity: Number(newVal.unit_quantity),
+        amount: Number(newVal.amount) * 1.0,
+        unit_quantity: Number(newVal.unit_quantity) * 1.0,
         product_quantity: Number(newVal.product_quantity),
         unit_id: newVal.unit?.id || "",
         category_id: newVal.category?.id || "",

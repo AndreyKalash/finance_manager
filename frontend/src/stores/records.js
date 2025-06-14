@@ -20,6 +20,37 @@ export const useRecordsStore = defineStore("records", {
   actions: {
     async fetchRecords(limit = 50, skip = 0, force = false) {
       if (!force && this.hasRecords) return;
+      await this.fetchIncomeRecords(limit, skip, force);
+      await this.fetchExpenseRecords(limit, skip, force);
+    },
+    async fetchTypedRecords(limit = 50, skip = 0, force = false, type) {
+      if (type == RTYPES.income) {
+        await this.fetchIncomeRecords(limit, skip, force);
+      } else if (type == RTYPES.expense) {
+        await this.fetchExpenseRecords(limit, skip, force);
+      }
+    },
+    async fetchIncomeRecords(limit = 50, skip = 0, force = false) {
+      if (!force && this.hasRecords) return;
+      this.loading = true;
+      this.error = null;
+      try {
+        if (force || this.records[RTYPES.income].length == 0) {
+          const incomeResponse = await RecordsAPI.getRecords(
+            RTYPES.income,
+            limit,
+            skip
+          );
+          this.records[RTYPES.income].push(...incomeResponse.data);
+        }
+      } catch (error) {
+        this.error = error.response?.data?.detail || "Ошибка загрузки записей";
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchExpenseRecords(limit = 50, skip = 0, force = false) {
+      if (!force && this.hasRecords) return;
       this.loading = true;
       this.error = null;
       try {
@@ -29,15 +60,7 @@ export const useRecordsStore = defineStore("records", {
             limit,
             skip
           );
-          this.records[RTYPES.expense] = expenseResponse.data;
-        }
-        if (force || this.records[RTYPES.income].length == 0) {
-          const incomeResponse = await RecordsAPI.getRecords(
-            RTYPES.income,
-            limit,
-            skip
-          );
-          this.records[RTYPES.income] = incomeResponse.data;
+          this.records[RTYPES.expense].push(...expenseResponse.data);
         }
       } catch (error) {
         this.error = error.response?.data?.detail || "Ошибка загрузки записей";
@@ -79,28 +102,30 @@ export const useRecordsStore = defineStore("records", {
       this.error = null;
       try {
         const response = await RecordsAPI.exportRecords(type, extension);
-        console.log(response);
-        
-        
-        const blob = new Blob([response.data], { type: response.headers['content-type'] });
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"],
+        });
         const url = window.URL.createObjectURL(blob);
-        
-        const contentDisposition = response.headers['content-disposition'];
-        const fileNameMatch = contentDisposition.match(/filename="?(.+?)"?(;|$)/);
+
+        const contentDisposition = response.headers["content-disposition"];
+        const fileNameMatch = contentDisposition.match(
+          /filename="?(.+?)"?(;|$)/
+        );
         const fileName = fileNameMatch ? fileNameMatch[1] : `data.${extension}`;
-        
-        const link = document.createElement('a');
+
+        const link = document.createElement("a");
         link.href = url;
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
-        
+
         window.URL.revokeObjectURL(url);
         document.body.removeChild(link);
-        
       } catch (error) {
-        this.error = error.response?.data?.detail || "Ошибка при экспорте данных";
+        this.error =
+          error.response?.data?.detail || "Ошибка при экспорте данных";
       }
-    }
+    },
   },
 });

@@ -1,5 +1,5 @@
 <template>
-  <section class="profile">
+  <!-- <section class="profile">
     <div class="container">
       <h2>Профиль пользователя</h2>
       <div v-if="user" class="profile-info">
@@ -18,7 +18,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
   <!-- Секция управления сущностями через кастомные компоненты -->
   <section>
     <div class="settings container">
@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { RTYPES } from "@/utils/recordTypes";
 import { useCategoriesStore } from "@/stores/categories";
 import { useTagsStore } from "@/stores/tags";
@@ -57,7 +57,7 @@ const categoriesStore = useCategoriesStore();
 const tagsStore = useTagsStore();
 const unitsStore = useUnitsStore();
 
-const user = ref(null);
+// const user = ref(null);
 const expenseCategories = computed(() => categoriesStore.categories[RTYPES.expense]);
 const expenseTags = computed(() => tagsStore.tags[RTYPES.expense]);
 const incomeCategories = computed(() => categoriesStore.categories[RTYPES.income]);
@@ -103,9 +103,9 @@ const handleDeleteUnit = async (id) => {
   await unitsStore.deleteUnit(id);
 };
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString();
-};
+// const formatDate = (dateString) => {
+//   return new Date(dateString).toLocaleDateString();
+// };
 
 onMounted(async () => {
   await categoriesStore.fetchCategories();

@@ -10,22 +10,22 @@ export const AuthAPI = {
   },
 
   async register(userData) {
-    return api.post("auth/register", userData);
+    return await api.post("auth/register", userData);
   },
 
   async logout() {
-    return api.post("auth/logout");
+    return await api.post("auth/logout");
   },
 
   async getMe() {
-    return api.get("/users/me");
+    return await api.get("/users/me");
   },
 
   async requestVerifyToken(email) {
-    return api.post("/auth/request-verify-token", email);
+    return await api.post("/auth/request-verify-token", email);
   },
 
   async verifyToken(token) {
-    return api.post("/auth/verify", token);
+    return await api.post("/auth/verify", token);
   },
 };

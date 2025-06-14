@@ -42,10 +42,10 @@ class Record(Base):
     updated_at: Mapped[mt.UPDATED_AT]
 
     category_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey("category.id"), nullable=True
+        UUID, ForeignKey("category.id", ondelete="SET NULL"), nullable=True, 
     )
     unit_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey("unit.id"), nullable=True
+        UUID, ForeignKey("unit.id", ondelete="SET NULL"), nullable=True
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID, ForeignKey("user.id"), nullable=True

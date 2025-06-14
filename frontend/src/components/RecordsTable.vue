@@ -14,7 +14,7 @@
       <input type="search" v-model="searchQuery" placeholder="Поиск по таблице" id="records_search" />
     </div>
     <!-- Контейнер таблицы-->
-    <div class="table_container" @mouseenter="onTableMouseEnter" @mouseleave="onTableMouseLeave">
+    <div class="table_container" @mouseenter="onTableMouseEnter" @mouseleave="onTableMouseLeave" @scroll="handleScroll">
       <table class="records_table">
         <thead>
           <tr>
@@ -28,7 +28,7 @@
             <td>{{ item.name }}</td>
             <td>{{ item.amount }}</td>
             <template v-if="currentType === RTYPES.expense">
-              <td>{{ item.unit.name }}</td>
+              <td>{{ item.unit?.name }}</td>
               <td>{{ item.unit_quantity }}</td>
               <td>{{ item.product_quantity }}</td>
             </template>
@@ -130,6 +130,9 @@ const tableHover = ref(false);
 const formModalVisible = ref(false);
 const editingRecord = ref(null);
 const showTooltip = ref(null);
+const isLoading = ref(false);
+const hasMoreData = ref(true);
+const currentPage = ref(0);
 
 const categories = computed(() => categoryStore.categories[currentType.value] || []);
 const tags = computed(() => tagStore.tags[currentType.value] || []);
@@ -154,6 +157,37 @@ const filteredItems = computed(() => {
     (item.name ?? "").toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
+
+async function handleScroll(event) {
+  
+  const element = event.target;
+  const { scrollTop, scrollHeight, clientHeight } = element;
+  
+  if (scrollHeight - clientHeight - scrollTop <= 10 && hasMoreData.value && !isLoading.value) {
+    await loadMoreRecords();
+  }
+}
+
+async function loadMoreRecords() {
+  if (isLoading.value || !hasMoreData.value) return;
+  
+  isLoading.value = true;
+  
+  try {
+    currentPage.value += 1;
+    await recordsStore.fetchTypedRecords(
+      50,
+      50 * currentPage.value,
+      true,
+      currentType.value, 
+    );
+    
+  } catch (error) {
+    console.error('Ошибка загрузки данных:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 function onTableMouseEnter() {
   tableHover.value = true;
@@ -186,7 +220,7 @@ async function updateRecord(type, record) {
 }
 
 async function deleteRecord(type, record) {
-  if (confirm("Вы уверены, что хотите удалить эту запись?" + type + record)) {
+  if (confirm("Вы уверены, что хотите удалить эту запись?")) {
     await recordsStore.deleteRecord(type, record.id);
     if (props.fetchCharts) {
       await fetchCharts(type, record);

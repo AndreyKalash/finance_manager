@@ -25,8 +25,8 @@ class ExpenseRecordBaseDTO(RecordBaseDTO):
 
 
 class IncomeRecordAddDTO(RecordBaseDTO):
-    category_id: UUID
-    tags: list[UUID]
+    category_id: UUID | None
+    tags: list[UUID] = Field(default_factory=list)
 
 
 class IncomeRecordDTO(RecordBaseDTO):
@@ -37,9 +37,9 @@ class IncomeRecordDTO(RecordBaseDTO):
 
 
 class ExpenseRecordAddDTO(ExpenseRecordBaseDTO):
-    unit_id: UUID
-    category_id: UUID
-    tags: list[UUID]
+    unit_id: UUID | None
+    category_id: UUID | None
+    tags: list[UUID] = Field(default_factory=list)
 
 
 class ExpenseRecordDTO(ExpenseRecordBaseDTO):

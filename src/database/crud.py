@@ -13,7 +13,8 @@ async def select_data(
     limit: int = 1000,
     skip: int = 0,
     selectload: list = [],
-    no_limit: bool = False
+    no_limit: bool = False,
+    order_by = None
 ):
     load_options = [selectinload(rel) for rel in selectload]
     query = (
@@ -21,8 +22,10 @@ async def select_data(
     )
     if not no_limit:
         query = query.offset(skip)
-    if hasattr(model, "created_at"):
-        query = query.order_by(model.created_at)
+   
+    if order_by is not None:
+        query = query.order_by(order_by)
+        
 
     result = await session.execute(query)
     return result.scalars().all()

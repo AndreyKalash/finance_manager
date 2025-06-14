@@ -24,7 +24,7 @@ async def categories_month_stats(
             func.sum(Record.amount)
             if record_type_name == "income"
             else func.sum(
-                Record.amount * Record.product_quantity * Record.unit_quantity
+                Record.amount * Record.product_quantity
             )
         )
     elif stats_type == "count":
@@ -80,7 +80,7 @@ async def trend(
         amount_expr = func.coalesce(func.sum(Record.amount), 0)
     elif record_type_name == "expense":
         amount_expr = func.coalesce(
-            func.sum(Record.amount * Record.product_quantity * Record.unit_quantity), 0
+            func.sum(Record.amount * Record.product_quantity), 0
         )
     # Базовые условия соединения записей с временными окнами
     join_conditions = [
@@ -97,10 +97,9 @@ async def trend(
     if filters.categories:
         join_conditions.append(Record.category_id.in_(filters.categories))
     if filters.tags:
-        join_conditions.append(exists(
-            select(RecordTag.record_id).where(
-                RecordTag.tag_id.in_(filters.tags)
-            ).correlate(Record)
+        join_conditions.append(Record.id.in_(
+            select(RecordTag.record_id)
+            .where(RecordTag.tag_id.in_(filters.tags))
         ))
     if filters.units:
         join_conditions.append(Record.unit_id.in_(filters.units))
@@ -119,4 +118,5 @@ async def trend(
         .group_by(date_windows.c.window_start)
         .order_by(date_windows.c.window_start)
     )
+    print(query)
     return await session.execute(query)

@@ -33,8 +33,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       if (error.response.status === 401) {
-        const authStore = useAuthStore();
-        authStore.logout();
+        // if (localStorage.getItem("token") != 'undefined') {
+        //   const authStore = useAuthStore();
+        //   authStore.logout();
+        // }
         router.push("/login");
       }
     }

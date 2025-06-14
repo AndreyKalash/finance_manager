@@ -8,7 +8,7 @@ export async function authGuard(to, from, next) {
       try {
         await authStore.fetchUser();
       } catch (error) {
-        authStore.logout();
+        // await authStore.logout();
         return next("/login");
       }
     }

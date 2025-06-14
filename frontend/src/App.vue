@@ -1,4 +1,5 @@
 <template>
+  
   <div id="app">
     <AppHeader />
     <router-view />
@@ -7,7 +8,7 @@
 
 <script>
 import AppHeader from '@/components/layout/AppHeader.vue';
-
+document.title = 'Finance Manager'
 export default {
   name: 'App',
   components: {

@@ -27,9 +27,19 @@
 <script setup>
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useCategoriesStore } from "@/stores/categories";
+import { useTagsStore } from "@/stores/tags";
+import { useRecordsStore } from "@/stores/records";
+import { useUnitsStore } from "@/stores/units";
+import { useStatsStore } from "@/stores/stats";
 import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const categoriesStore = useCategoriesStore();
+const tagsStore = useTagsStore();
+const recordsStore = useRecordsStore();
+const unitsStore = useUnitsStore();
+const statsStore = useStatsStore();
 const router = useRouter();
 const showDropdown = ref(false);
 
@@ -38,6 +48,11 @@ const toggleDropdown = () => {
 };
 
 const handleLogout = async () => {
+  categoriesStore.$reset();
+  tagsStore.$reset();
+  recordsStore.$reset();
+  unitsStore.$reset();
+  statsStore.$reset();
   await authStore.logout();
   router.push("/login");
 };

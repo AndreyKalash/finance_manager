@@ -51,9 +51,14 @@
 
     </div>
     <!-- Кнопка применения фильтров -->
-    <button class="apply-button" @click="applyFilters" :disabled="isLoading">
-      Применить
-    </button>
+    <div class="filter-actions" style="display: flex; gap: 1rem;">
+      <button class="filter-button" @click="applyFilters" :disabled="isLoading">
+        Применить
+      </button>
+      <button class="filter-button" @click="resetFilters" :disabled="isLoading">
+        Сбросить
+      </button>
+    </div>
   </section>
 </template>
 
@@ -113,6 +118,7 @@ const handleSelectType = async (value) => {
   isLoading.value = true;
   try {
     currentType.value = value;
+    await resetFilters();
     await nextTick();
     await applyFilters()
     dataKey.value++;
@@ -148,12 +154,21 @@ const applyFilters = async (needCheck = true) => {
     isLoading.value = false;
   }
 };
+async function resetFilters() {
+  startDate.value = getDefaultStartDate();
+  endDate.value = getDefaultEndDate();
+  selectedCategories.value = [];
+  selectedTags.value = [];
+  selectedUnit.value = [];
+  lastAppliedFilters.value = null;
+  await applyFilters(); // сразу применить сброшенные фильтры
+}
 // Конфигурация отображения для разных типов операций
 const typeConfig = computed(() => {
   const configs = {
     [RTYPES.expense]: {
       color: '#9B59B6',
-      label: 'Расходы',
+      label: 'Траты',
       unitSymbol: '₽'
     },
     [RTYPES.income]: {
@@ -381,7 +396,7 @@ onMounted(async () => {
   transition: opacity 0.3s ease;
 }
 
-.apply-button {
+.filter-button {
   padding: 0.8rem 1.5rem;
   color: black;
   border: none;
@@ -396,15 +411,15 @@ onMounted(async () => {
   align-self: center;
 }
 
-.apply-button:hover {
+.filter-button:hover {
   background: #0ea192;
 }
 
-.apply-button:active {
+.filter-button:active {
   transform: scale(0.98);
 }
 
-.apply-button:disabled {
+.filter-button:disabled {
   background: #4b5563;
   cursor: not-allowed;
   opacity: 0.7;
@@ -462,7 +477,7 @@ onMounted(async () => {
     min-width: auto;
   }
 
-  .apply-button {
+  .filter-button {
     width: 100%;
     margin-top: 1rem;
   }

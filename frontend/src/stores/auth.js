@@ -23,11 +23,11 @@ export const useAuthStore = defineStore("auth", {
       }
     },
     async initAuth() {
-      if (this.token && !this.user) {
+      if (this.token != 'undefined' && !this.user) {
         try {
           await this.fetchUser();
         } catch (error) {
-          this.logout();
+          // await this.logout();
         }
       }
     },
@@ -48,9 +48,10 @@ export const useAuthStore = defineStore("auth", {
       const response = await AuthAPI.getMe();
       this.user = response.data;
     },
-    logout() {
+    async logout() {
       this.user = null;
       this.token = null;
+      // await AuthAPI.logout()
       localStorage.removeItem("token");
     },
     async requestToken(email) {

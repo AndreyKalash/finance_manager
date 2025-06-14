@@ -40,6 +40,7 @@ class RecordRouter(BaseRouter):
             prefix=prefix,
             tags=["records"],
             record_type_id=record_type_id,
+            order_by=Record.record_date
         )
         # Добавление кастомного эндпоинта для экспорта
         self.router.add_api_route(
